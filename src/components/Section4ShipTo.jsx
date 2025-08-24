@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { DndContext, closestCenter, useDroppable } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import SortableShipToField from './SortableShipToField';
 
 
@@ -17,14 +17,43 @@ function Section4ShipTo({
 }) {
   const [isPaletteOver, setIsPaletteOver] = useState(false);
   
-  // Make the section droppable for palette fields
-  const { isOver, setNodeRef } = useDroppable({
+  // Make the section droppable for palette fields AND sortable for reordering
+  const { isOver, setNodeRef: droppableRef } = useDroppable({
     id: 'section4',
     data: {
       type: 'section',
       sectionNumber: 4,
       accepts: 'palette-fields'
     }
+  });
+
+  // Make the section sortable for reordering
+  const { 
+    attributes, 
+    listeners, 
+    setNodeRef: sortableRef, 
+    transform, 
+    transition, 
+    isDragging 
+  } = useSortable({
+    id: 'section4',
+    data: {
+      type: 'section',
+      sectionNumber: 4
+    }
+  });
+
+  // Combine refs - droppable for palette fields, sortable for reordering
+  const setNodeRef = (node) => {
+    droppableRef(node);
+    sortableRef(node);
+  };
+
+  // Debug logging for droppable zone
+  console.log('Section4ShipTo - Droppable zone created:', {
+    id: 'section4',
+    isOver,
+    setNodeRef: !!setNodeRef
   });
 
   // Update palette over state
@@ -58,11 +87,22 @@ function Section4ShipTo({
     }
   }, [shipToFields, lastModified]);
 
+  const style = {
+    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+    zIndex: isDragging ? 1000 : 1
+  };
+
   return (
     <div 
       ref={setNodeRef}
-      className={`section-4 ${isPaletteOver ? 'palette-over' : ''}`}
+      style={style}
+      className={`section-4 ${isPaletteOver ? 'palette-over' : ''} ${isDragging ? 'dragging' : ''}`}
       data-palette-over={isPaletteOver}
+      data-dragging={isDragging}
+      {...attributes}
+      {...listeners}
     >
       {/* Section Header */}
       <div className="section-header">

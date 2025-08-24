@@ -4,6 +4,7 @@ import './section-styles.css';
 import './section-title-colors.css';
 import SectionTitleColorPicker from './components/SectionTitleColorPicker';
 import { generatePurchaseOrderXML } from './templates/PurchaseOrderTemplate';
+import { generateNetSuiteTemplate } from './templates/NetSuiteIntegration';
 
 // Import modular components
 import Section1CompanyInfo from './components/Section1CompanyInfo';
@@ -78,8 +79,6 @@ function DraggableSectionWrapper({ children, id, sectionNumber, isSectionHandleD
     backgroundColor: isDragging ? 'rgba(255, 107, 107, 0.1)' : 'transparent'
   };
 
-
-
   return (
     <div 
       ref={setNodeRef} 
@@ -89,7 +88,6 @@ function DraggableSectionWrapper({ children, id, sectionNumber, isSectionHandleD
       data-testid={`draggable-section-${id}`}
       data-dragging={isDragging}
       {...attributes}
-
     >
       <div 
         className="section-content"
@@ -260,6 +258,8 @@ function PurchaseOrderForm() {
   
   }, [companyFields]);
 
+  
+
   // Track last modification time for company fields
   const [lastModified, setLastModified] = useState(new Date().toISOString());
 
@@ -304,51 +304,62 @@ function PurchaseOrderForm() {
   const handlePaletteDragEnd = (event) => {
     const { active, over } = event;
 
+    console.log('🎯 Palette drag end detected:', {
+      active: active?.id,
+      over: over?.id,
+      activeData: active?.data?.current,
+      overData: over?.data?.current
+    });
     
     if (!active?.data?.current || !over?.id) {
-
+      console.log('❌ Missing active data or over id');
       return;
     }
     const data = active.data.current;
     if (data.source !== 'palette') {
-
+      console.log('❌ Not a palette source:', data.source);
       return;
     }
 
     const baseLabel = data.label;
 
+    console.log('🎯 Attempting to add field to section:', {
+      baseLabel,
+      targetSection: over.id,
+      availableSections: ['section1', 'section2', 'section3', 'section4']
+    });
     
     // Check if dropping on section elements
     if (over.id === 'section1') {
-
+      console.log('✅ Adding to section1 (Company Info)');
       const existingIds = companyFields.map(f => f.id);
       const id = generateUniqueFieldId(baseLabel, existingIds);
       const newField = { id, label: `${baseLabel}:`, placeholder: baseLabel, value: '' };
       handleAddCompanyField(newField);
       showNotification(`➕ Added "${baseLabel}" to Company Info`, 'success');
     } else if (over.id === 'section2') {
-
+      console.log('✅ Adding to section2 (Purchase Order)');
       const existingIds = purchaseOrderFields.map(f => f.id);
       const id = generateUniqueFieldId(baseLabel, existingIds);
       const newField = { id, label: `${baseLabel}:`, placeholder: baseLabel, value: '' };
       handleAddPurchaseOrderField(newField);
       showNotification(`➕ Added "${baseLabel}" to Purchase Order`, 'success');
     } else if (over.id === 'section3') {
-
+      console.log('✅ Adding to section3 (Vendor)');
       const existingIds = vendorFields.map(f => f.id);
       const id = generateUniqueFieldId(baseLabel, existingIds);
       const newField = { id, label: `${baseLabel}:`, placeholder: baseLabel, value: '' };
       handleAddVendorField(newField);
       showNotification(`➕ Added "${baseLabel}" to Vendor section`, 'success');
     } else if (over.id === 'section4') {
-
+      console.log('✅ Adding to section4 (Ship To)');
       const existingIds = shipToFields.map(f => f.id);
       const id = generateUniqueFieldId(baseLabel, existingIds);
       const newField = { id, label: `${baseLabel}:`, placeholder: baseLabel, value: '' };
       handleAddShipToField(newField);
       showNotification(`➕ Added "${baseLabel}" to Ship-To section`, 'success');
     } else {
-
+      console.log('❌ Unknown target section:', over.id);
     }
   };
 
@@ -415,6 +426,8 @@ function PurchaseOrderForm() {
   const handleTotalsDragEnd = (event) => {
     const { active, over } = event;
     
+    if (!over) return;
+    
     if (active.id !== over.id) {
       setTotalsFields((prevFields) => {
         const oldIndex = prevFields.findIndex(field => field.id === active.id);
@@ -437,6 +450,8 @@ function PurchaseOrderForm() {
   const handleCommentsDragEnd = (event) => {
     const { active, over } = event;
     
+    if (!over) return;
+    
     if (active.id !== over.id) {
       setCommentsFields((prevFields) => {
         const oldIndex = prevFields.findIndex(field => field.id === active.id);
@@ -458,6 +473,8 @@ function PurchaseOrderForm() {
   // Handle contact fields drag end
   const handleContactDragEnd = (event) => {
     const { active, over } = event;
+    
+    if (!over) return;
     
     if (active.id !== over.id) {
       setContactFields((prevFields) => {
@@ -792,6 +809,15 @@ function PurchaseOrderForm() {
   const [showXMLModal, setShowXMLModal] = useState(false);
   const [xmlOutput, setXmlOutput] = useState('');
   
+  // State for NetSuite integration
+  const [showNetSuiteModal, setShowNetSuiteModal] = useState(false);
+  const [netSuiteOutput, setNetSuiteOutput] = useState('');
+  
+  // State for XML generation workflow
+  const [isXmlGenerated, setIsXmlGenerated] = useState(false);
+  
+
+  
   
   // Function to display XML output in a modal
   const displayXMLOutput = (xml) => {
@@ -826,6 +852,234 @@ function PurchaseOrderForm() {
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
     showNotification('📥 XML downloaded successfully!', 'success');
+  };
+
+  // =========================================================================
+  // NETSUITE INTEGRATION
+  // =========================================================================
+  
+  // Function to save form and generate XML
+  const handleSaveForm = () => {
+    try {
+      // Use the existing working logic from exportToXML
+      const capturedData = captureFieldValues();
+      
+      // Determine current visual order of sections 1 & 2 from DOM to avoid async state lag
+      const headerSections = Array.from(document.querySelectorAll('.header-section .sortable-section'));
+      const visualSections1And2 = headerSections
+        .map(el => el.id)
+        .filter(id => id === 'section1' || id === 'section2');
+      const sections1And2ForExport = (visualSections1And2.length === 2) ? visualSections1And2 : sections1And2Order;
+      
+      // Determine current visual order of sections 3 & 4 (Vendor / Ship-To) from DOM
+      const vendorShipToSections = Array.from(document.querySelectorAll('.vendor-shipping-section .sortable-section'));
+      const visualSections3And4 = vendorShipToSections
+        .map(el => el.id)
+        .filter(id => id === 'section3' || id === 'section4');
+      const sections3And4ForExport = (visualSections3And4.length === 2) ? visualSections3And4 : vendorShipToSectionOrder;
+      
+      // Helpers for DOM reads
+      const getText = (sel) => document.querySelector(sel)?.textContent?.trim() || '';
+      
+      // Normalize line items to include both UI keys (qty/rate/amount) and template keys (quantity/unitPrice/total)
+      const normalizedLineItems = (capturedData.lineItems || []).map(row => {
+        const normalizedRow = {
+          // original UI keys
+          itemNumber: row.itemNumber || '',
+          description: row.description || '',
+          qty: row.qty || row.quantity || '',
+          rate: row.rate || row.unitPrice || '',
+          amount: row.amount || row.total || '',
+          // template-expected keys
+          quantity: row.quantity || row.qty || '',
+          unitPrice: row.unitPrice || row.rate || '',
+          total: row.total || row.amount || ''
+        };
+        
+        // Preserve all custom column data
+        lineItemColumnOrder.forEach(columnId => {
+          if (columnId.startsWith('custom-') && row[columnId] !== undefined) {
+            normalizedRow[columnId] = row[columnId];
+          }
+        });
+        
+        return normalizedRow;
+      });
+
+      const exportData = {
+        ...capturedData,
+        // Add major sections order for group swapping
+        majorSectionsOrder: majorSectionsOrder,
+        // Add section order information for dynamic XML generation
+        sectionOrder: {
+          sections1And2: sections1And2ForExport,
+          sections3And4: sections3And4ForExport,
+          sections5And6: sections5And6Order,
+          sections8And9: commentsTotalsSectionOrder,
+          lineItemColumns: lineItemColumnOrder,
+          shippingColumns: shippingColumnOrder
+        },
+        // CRITICAL: Add field order information for dynamic XML generation
+        fieldOrder: {
+          company: companyFieldOrder,
+          purchaseOrder: purchaseOrderFieldOrder,
+          vendor: vendorFields.map(f => f.id),
+          shipTo: shipToFields.map(f => f.id)
+        },
+        // Add normalized line items (support both key schemes)
+        lineItems: normalizedLineItems,
+        // Shipping details (prefer data-field; fall back handled in XML builder too)
+        ...(() => {
+          const shippingData = {};
+          shippingColumnOrder.forEach(columnId => {
+            const value = getText(`.section-5 [data-field="${columnId}"] .editable-field`);
+            shippingData[columnId] = value;
+          });
+          return shippingData;
+        })(),
+        // Totals: include the current totalsFields state for dynamic ordering
+        totalsFields: totalsFields,
+        // Comments: include the current commentsFields state for dynamic ordering
+        commentsFields: commentsFields,
+        // Contact: include the current contactFields state for dynamic ordering
+        contactFields: contactFields,
+        // Also include individual totals for backward compatibility
+        subtotal: getText('.totals-section .total-row[data-field="subtotal"] .calculated-field') || '$0.00',
+        tax: getText('.totals-section .total-row[data-field="tax"] .editable-field') || '$0.00',
+        shipping: getText('.totals-section .total-row[data-field="shipping"] .editable-field') || '$0.00',
+        other: getText('.totals-section .total-row[data-field="other"] .editable-field') || '$0.00',
+        total: getText('.totals-section .total-row[data-field="total"] .total-field') || '$0.00',
+        comments: getText('.comments-content .editable-field'),
+        contactInfo: getText('.contact-section .editable-field')
+      };
+      
+      // Generate XML
+      const xml = generatePurchaseOrderXML(exportData);
+      setXmlOutput(xml);
+      setShowXMLModal(true);
+      setIsXmlGenerated(true);
+      
+      showNotification('💾 Form saved and XML generated!', 'success');
+      
+    } catch (error) {
+      console.error('❌ Form save failed:', error);
+      showNotification(`❌ Form save failed: ${error.message}`, 'error');
+    }
+  };
+
+  // Function to handle NetSuite integration
+  const handleNetSuiteIntegration = () => {
+    try {
+      if (!isXmlGenerated) {
+        showNotification('❌ Please save the form and generate XML first!', 'error');
+        return;
+      }
+      
+      // Generate NetSuite XML directly from form data (more reliable than XML parsing)
+      console.log('🔀 Generating NetSuite XML from form data');
+      
+      // Prepare the same export data structure that was used for XML generation
+      const capturedData = captureFieldValues();
+      
+      // Determine current visual order of sections 1 & 2 from DOM to avoid async state lag
+      const headerSections = Array.from(document.querySelectorAll('.header-section .sortable-section'));
+      const visualSections1And2 = headerSections
+        .map(el => el.id)
+        .filter(id => id === 'section1' || id === 'section2');
+      const sections1And2ForExport = (visualSections1And2.length === 2) ? visualSections1And2 : sections1And2Order;
+      
+      // Determine current visual order of sections 3 & 4 (Vendor / Ship-To) from DOM
+      const vendorShipToSections = Array.from(document.querySelectorAll('.vendor-shipping-section .sortable-section'));
+      const visualSections3And4 = vendorShipToSections
+        .map(el => el.id)
+        .filter(id => id === 'section3' || id === 'section4');
+      const sections3And4ForExport = (visualSections3And4.length === 2) ? visualSections3And4 : vendorShipToSectionOrder;
+      
+      // Helpers for DOM reads
+      const getText = (sel) => document.querySelector(sel)?.textContent?.trim() || '';
+      
+      // Build the data structure that NetSuite generator expects
+      const netSuiteData = {
+        companyFields: companyFields,
+        purchaseOrderFields: purchaseOrderFields,
+        vendorFields: vendorFields,
+        shipToFields: shipToFields,
+        totalsFields: totalsFields,
+        commentsFields: commentsFields,
+        contactFields: contactFields,
+        // Add section order information for dynamic XML generation
+        sectionOrder: {
+          sections1And2: sections1And2ForExport,
+          sections3And4: sections3And4ForExport,
+          sections5And6: sections5And6Order,
+          sections8And9: commentsTotalsSectionOrder,
+          lineItemColumns: lineItemColumnOrder,
+          shippingColumns: shippingColumnOrder
+        },
+        // Add field order information for dynamic XML generation
+        fieldOrder: {
+          company: companyFieldOrder,
+          purchaseOrder: purchaseOrderFieldOrder,
+          vendor: vendorFields.map(f => f.id),
+          shipTo: shipToFields.map(f => f.id)
+        },
+        // Add shipping fields data
+        shippingFields: {
+          'requisitioner': getText(`.section-5 [data-field="requisitioner"] .editable-field`) || '',
+          'ship-via': getText(`.section-5 [data-field="shipVia"] .editable-field`) || '',
+          'fob': getText(`.section-5 [data-field="fob"] .editable-field`) || '',
+          'shipping-terms': getText(`.section-5 [data-field="shippingTerms"] .editable-field`) || ''
+        }
+      };
+      
+      const netSuiteXML = generateNetSuiteTemplate(netSuiteData);
+      
+      console.log('🔀 NetSuite XML generated:', netSuiteXML ? netSuiteXML.substring(0, 200) + '...' : 'No output');
+      
+      setNetSuiteOutput(netSuiteXML);
+      setShowNetSuiteModal(true);
+      
+      showNotification('🔀 NetSuite XML generated successfully!', 'success');
+      
+    } catch (error) {
+      console.error('❌ NetSuite generation failed:', error);
+      showNotification(`❌ NetSuite generation failed: ${error.message}`, 'error');
+    }
+  };
+
+  // Function to display NetSuite output in a modal
+  const displayNetSuiteOutput = (xml) => {
+    setNetSuiteOutput(xml);
+    setShowNetSuiteModal(true);
+  };
+
+  // Function to close NetSuite modal
+  const closeNetSuiteModal = () => {
+    setShowNetSuiteModal(false);
+    setNetSuiteOutput('');
+  };
+
+  // Function to copy NetSuite XML to clipboard
+  const copyNetSuiteToClipboard = () => {
+    navigator.clipboard.writeText(netSuiteOutput).then(() => {
+      showNotification('📋 NetSuite XML copied to clipboard!', 'success');
+    }).catch(() => {
+      showNotification('❌ Failed to copy NetSuite XML to clipboard', 'error');
+    });
+  };
+
+  // Function to download NetSuite XML file
+  const downloadNetSuiteXML = () => {
+    const blob = new Blob([netSuiteOutput], { type: 'application/xml' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `purchase-order-netsuite-${purchaseOrderFields.find(f => f.id === 'po-number')?.value || 'unknown'}.xml`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    showNotification('📥 NetSuite XML downloaded successfully!', 'success');
   };
 
   // =========================================================================
@@ -1789,7 +2043,7 @@ function PurchaseOrderForm() {
   const handleSections5And6DragEnd = (event) => {
     const { active, over } = event;
     
-
+    if (!over) return;
     
     if (active.id !== over.id) {
 
@@ -1819,7 +2073,7 @@ function PurchaseOrderForm() {
   const handleLineItemColumnDragEnd = (event) => {
     const { active, over } = event;
     
-
+    if (!over) return;
     
     if (active.id !== over.id) {
 
@@ -1863,7 +2117,7 @@ function PurchaseOrderForm() {
     // Handle the old event format (fallback)
     const { active, over } = event;
     
-
+    if (!over) return;
     
     if (active.id !== over.id) {
 
@@ -1888,6 +2142,9 @@ function PurchaseOrderForm() {
   const handleCommentsTotalsDragEnd = (event) => {
     const { active, over } = event;
     
+    // Check if over exists (user didn't drag outside valid area)
+    if (!over) return;
+    
     if (active.id !== over.id) {
       setCommentsTotalsSectionOrder((items) => {
         const oldIndex = items.indexOf(active.id);
@@ -1902,7 +2159,8 @@ function PurchaseOrderForm() {
   const handleVendorShipToSectionDragEnd = (event) => {
     const { active, over } = event;
     
-
+    // Check if over exists (user didn't drag outside valid area)
+    if (!over) return;
     
     if (active.id !== over.id) {
 
@@ -1930,7 +2188,7 @@ function PurchaseOrderForm() {
   const handleVendorShipToAndShippingDetailsDragEnd = (event) => {
     const { active, over } = event;
     
-
+    if (!over) return;
     
     if (active.id !== over.id) {
 
@@ -2249,6 +2507,8 @@ function PurchaseOrderForm() {
   const handleVendorShipToShippingGroupDragEnd = (event) => {
     const { active, over } = event;
     
+    if (!over) return;
+    
     if (active.id !== over.id) {
 
       
@@ -2409,7 +2669,49 @@ function PurchaseOrderForm() {
             </div>
           </div>
 
-          {/* Major Sections Container with Drag and Drop */}
+          {/* Sections 3 & 4 - Using the main DndContext for both palette drag and reordering */}
+          <div className="vendor-shipto-sections" style={{ marginTop: '30px' }}>
+            <SortableContext 
+              items={vendorShipToSectionOrder}
+              strategy={horizontalListSortingStrategy}
+            >
+              <div className="vendor-shipping-columns">
+                {vendorShipToSectionOrder.map((sectionId, sectionIndex) => (
+                  <div key={`${sectionId}-${sectionIndex}`} className="individual-section">
+                    {sectionId === 'section3' ? (
+                      <div key={`section3-${sectionIndex}`} className="section-3-wrapper">
+                        <Section3Vendor 
+                          vendorFields={vendorFields}
+                          sensors={sensors}
+                          onVendorDragEnd={handleVendorDragEnd}
+                          onAddVendorField={handleAddVendorField}
+                          onRemoveVendorField={handleRemoveVendorField}
+                          onLabelChange={handleVendorFieldLabelChange}
+                          onContentChange={handleContentChange}
+                          lastModified={Date.now()}
+                        />
+                      </div>
+                    ) : sectionId === 'section4' ? (
+                      <div key="section4" className="section-4-wrapper">
+                        <Section4ShipTo 
+                          shipToFields={shipToFields}
+                          sensors={sensors}
+                          onShipToDragEnd={handleShipToDragEnd}
+                          onAddShipToField={handleAddShipToField}
+                          onRemoveShipToField={handleRemoveShipToField}
+                          onLabelChange={handleShipToFieldLabelChange}
+                          onContentChange={handleContentChange}
+                          lastModified={Date.now()}
+                        />
+                      </div>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </SortableContext>
+          </div>
+
+          {/* Major Sections Container with Drag and Drop - Only for shipping section now */}
           <div className="major-sections-container">
             <DndContext
               sensors={sensors}
@@ -2417,64 +2719,11 @@ function PurchaseOrderForm() {
               onDragEnd={handleMajorSectionsDragEnd}
             >
               <SortableContext 
-                items={majorSectionsOrder}
+                items={majorSectionsOrder.filter(group => group === 'shipping-section')}
                 strategy={verticalListSortingStrategy}
               >
                 {majorSectionsOrder.map((sectionGroup, index) => {
-                  if (sectionGroup === 'vendor-shipto-group') {
-                    return (
-                      <div key={`vendor-shipto-group-${index}`} className="section-container" style={{ marginTop: '30px', position: 'relative' }}>
-                        {/* Group Drag Handle for Sections 3 & 4 */}
-                        <DraggableGroupHandle id="vendor-shipto-group" label="Vendor & Ship To">
-                          <div className="vendor-shipping-columns">
-                            {/* Individual sections with their own DndContext for internal reordering */}
-                            <DndContext
-                              sensors={sensors}
-                              collisionDetection={closestCenter}
-                              onDragEnd={handleVendorShipToDragEnd}
-                            >
-                              <SortableContext 
-                                items={vendorShipToSectionOrder}
-                                strategy={horizontalListSortingStrategy}
-                              >
-                                {vendorShipToSectionOrder.map((sectionId, sectionIndex) => (
-                                  <div key={`${sectionId}-${sectionIndex}`} className="individual-section">
-                                    {sectionId === 'section3' ? (
-                                      <DraggableSectionWrapper key={`section3-${sectionIndex}`} id="section3" sectionNumber="3" isSectionHandleDragging={isSectionHandleDragging} showDragHandle={true}>
-                                        <Section3Vendor 
-                                          vendorFields={vendorFields}
-                                          sensors={sensors}
-                                          onVendorDragEnd={handleVendorDragEnd}
-                                          onAddVendorField={handleAddVendorField}
-                                          onRemoveVendorField={handleRemoveVendorField}
-                                          onLabelChange={handleVendorFieldLabelChange}
-                                          onContentChange={handleContentChange}
-                                          lastModified={Date.now()}
-                                        />
-                                      </DraggableSectionWrapper>
-                                    ) : sectionId === 'section4' ? (
-                                      <DraggableSectionWrapper key="section4" id="section4" sectionNumber="4" isSectionHandleDragging={isSectionHandleDragging} showDragHandle={true}>
-                                        <Section4ShipTo 
-                                          shipToFields={shipToFields}
-                                          sensors={sensors}
-                                          onShipToDragEnd={handleShipToDragEnd}
-                                          onAddShipToField={handleAddShipToField}
-                                          onRemoveShipToField={handleRemoveShipToField}
-                                          onLabelChange={handleShipToFieldLabelChange}
-                                          onContentChange={handleContentChange}
-                                          lastModified={Date.now()}
-                                        />
-                                      </DraggableSectionWrapper>
-                                    ) : null}
-                                  </div>
-                                ))}
-                              </SortableContext>
-                            </DndContext>
-                          </div>
-                        </DraggableGroupHandle>
-                      </div>
-                    );
-                  } else if (sectionGroup === 'shipping-section') {
+                  if (sectionGroup === 'shipping-section') {
                     return (
                       <div key={`shipping-section-${index}`} style={{ marginTop: '30px' }}>
                         <DraggableGroupHandle id="shipping-section" label="Shipping">
@@ -2492,8 +2741,6 @@ function PurchaseOrderForm() {
                 })}
               </SortableContext>
             </DndContext>
-
-
           </div>
 
 
@@ -2738,15 +2985,14 @@ function PurchaseOrderForm() {
 
           {/* Action Buttons */}
           <div className="button-section">
-            <button className="btn preview-btn" onClick={togglePreviewMode}>
-              {isPreviewMode ? '👁️ Hide Preview' : '👁️ Show Preview'}
-            </button>
+
             <button className="btn" onClick={handleAIFill}>
               🤖 AI Fill
             </button>
-            <button className="btn export-btn" onClick={exportToXML}>
-              📄 Generate XML
+            <button className="btn save-btn" onClick={handleSaveForm}>
+              💾 Save Form & Generate XML
             </button>
+
           </div>
 
           {/* Change History Display */}
@@ -2800,7 +3046,38 @@ function PurchaseOrderForm() {
                   <button className="btn download-btn" onClick={downloadXML}>
                     📥 Download XML
                   </button>
+                  <button className="btn netsuite-btn" onClick={handleNetSuiteIntegration}>
+                    🔀 Generate NetSuite XML
+                  </button>
                   <button className="btn close-btn" onClick={closeXMLModal}>
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* NetSuite XML Modal */}
+          {showNetSuiteModal && (
+            <div className="xml-modal-overlay" onClick={closeNetSuiteModal}>
+              <div className="xml-modal" onClick={(e) => e.stopPropagation()}>
+                <div className="xml-modal-header">
+                  <h3>🔀 NetSuite XML Template</h3>
+                  <button className="xml-modal-close" onClick={closeNetSuiteModal}>×</button>
+                </div>
+                <div className="xml-modal-content">
+                  <div className="xml-output-container">
+                    <pre className="xml-code">{netSuiteOutput}</pre>
+                  </div>
+                </div>
+                <div className="xml-modal-actions">
+                  <button className="btn copy-btn" onClick={copyNetSuiteToClipboard}>
+                    📋 Copy NetSuite XML
+                  </button>
+                  <button className="btn download-btn" onClick={downloadNetSuiteXML}>
+                    📥 Download NetSuite XML
+                  </button>
+                  <button className="btn close-btn" onClick={closeNetSuiteModal}>
                     Close
                   </button>
                 </div>

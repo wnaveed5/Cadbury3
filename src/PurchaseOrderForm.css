@@ -703,6 +703,34 @@
   background: #047857;
 }
 
+.netsuite-btn {
+  background: #7c3aed;
+  margin-left: 10px;
+}
+
+.netsuite-btn:hover {
+  background: #6d28d9;
+}
+
+.save-btn {
+  background: #059669;
+  margin-left: 10px;
+}
+
+.save-btn:hover {
+  background: #047857;
+}
+
+.netsuite-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.netsuite-btn:disabled:hover {
+  background: #9ca3af;
+}
+
 /* XML Modal Styles */
 .xml-modal-overlay {
   position: fixed;
