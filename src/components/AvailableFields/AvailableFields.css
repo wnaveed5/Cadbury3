@@ -1,0 +1,372 @@
+/* ============================================================================
+   AVAILABLE FIELDS COMPONENT STYLES
+   ============================================================================ */
+
+/* Sidebar Toggle Container */
+.sidebar-toggle-container {
+  position: fixed;
+  top: 20px;
+  left: 300px;
+  z-index: 1000;
+}
+
+.sidebar-toggle-btn {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sidebar-toggle-btn:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+.sidebar-toggle-btn:active {
+  transform: translateY(0);
+}
+
+/* Field List Sidebar */
+.field-list-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100vh;
+  background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+  border-right: 2px solid #e2e8f0;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  z-index: 999;
+  transition: transform 0.3s ease;
+}
+
+.field-list-sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.field-list-sidebar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.field-list-sidebar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.field-list-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Field List Header */
+.field-list-header {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  color: white;
+  padding: 20px;
+  text-align: center;
+  border-bottom: 2px solid #475569;
+}
+
+.field-list-header h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.field-list-header p {
+  margin: 0;
+  font-size: 12px;
+  opacity: 0.8;
+  font-weight: 300;
+}
+
+/* Field List Content */
+.field-list-content {
+  padding: 20px;
+}
+
+/* Field Category */
+.field-category {
+  margin-bottom: 25px;
+}
+
+.category-title {
+  color: #1e293b;
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+  border-radius: 6px;
+  border-left: 4px solid #3b82f6;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Field List */
+.field-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Field Item */
+.field-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  margin: 6px 0;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: grab;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.field-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.field-item:hover::before {
+  left: 100%;
+}
+
+.field-item:hover {
+  border-color: #3b82f6;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  transform: translateX(4px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.2);
+}
+
+.field-item.hovered {
+  border-color: #3b82f6;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+}
+
+.field-item:active {
+  cursor: grabbing;
+  transform: translateX(2px) scale(0.98);
+}
+
+/* Field Name */
+.field-name {
+  flex: 1;
+  font-size: 13px;
+  color: #374151;
+  font-weight: 500;
+  user-select: none;
+}
+
+/* Add Field Button */
+.add-field-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+  margin-right: 8px;
+}
+
+.add-field-btn:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4);
+}
+
+.add-field-btn:active {
+  transform: scale(0.95);
+}
+
+/* Dragging State */
+.field-item[data-dragging="true"] {
+  opacity: 0.8;
+  transform: rotate(2deg) scale(1.05);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+  border-color: #3b82f6;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  z-index: 1000;
+}
+
+/* Enhanced dragging state */
+.field-item.dragging {
+  opacity: 0.8;
+  transform: rotate(2deg) scale(1.05);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+  border-color: #3b82f6;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  z-index: 1000;
+}
+
+/* Drag indicator animation */
+.drag-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.drag-pulse {
+  width: 20px;
+  height: 20px;
+  background: radial-gradient(circle, #3b82f6, transparent);
+  border-radius: 50%;
+  animation: dragPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes dragPulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .field-list-sidebar {
+    width: 100%;
+    transform: translateX(-100%);
+  }
+  
+  .field-list-sidebar.sidebar-visible {
+    transform: translateX(0);
+  }
+  
+  .sidebar-toggle-container {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 1001;
+  }
+}
+
+/* Animation for field items */
+@keyframes fieldItemSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.field-item {
+  animation: fieldItemSlideIn 0.3s ease-out;
+}
+
+/* Hover effects for categories */
+.field-category:hover .category-title {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-left-color: #1d4ed8;
+}
+
+/* Focus states for accessibility */
+.field-item:focus-within {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.add-field-btn:focus {
+  outline: 2px solid #1d4ed8;
+  outline-offset: 2px;
+}
+
+/* Drag Instructions */
+.drag-instructions {
+  margin-top: 20px;
+  padding: 15px;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+}
+
+.instruction-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0;
+  font-size: 12px;
+  color: #475569;
+  font-weight: 500;
+}
+
+.instruction-icon {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+}
+
+/* Enhanced animations for better user experience */
+@keyframes dropPulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Smooth transitions for all interactive elements */
+.field-item,
+.add-field-btn,
+.category-title {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced hover states */
+.field-item:hover .field-name {
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+.field-item:hover .add-field-btn {
+  transform: scale(1.15);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+}

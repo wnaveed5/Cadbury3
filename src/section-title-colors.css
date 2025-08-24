@@ -1,0 +1,45 @@
+:root {
+  --section-title-background: #000000;
+  --section-title-text: #ffffff;
+}
+
+/* Apply section title colors to all section headers */
+.section-header {
+  background-color: var(--section-title-background) !important;
+  color: var(--section-title-text) !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+}
+
+/* Apply to specific section types */
+.section-1 .section-header,
+.section-2 .section-header,
+.section-3 .section-header,
+.section-4 .section-header,
+.section-5 .section-header,
+.comments-section .section-header,
+.totals-section .section-header {
+  background-color: var(--section-title-background) !important;
+  color: var(--section-title-text) !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+}
+
+/* Apply to line item column headers */
+.sortable-column-header th {
+  background-color: var(--section-title-background) !important;
+  color: var(--section-title-text) !important;
+}
+
+/* Apply to shipping column headers */
+.sortable-shipping-column-header .section-header {
+  background-color: var(--section-title-background) !important;
+  color: var(--section-title-text) !important;
+}

@@ -1,0 +1,121 @@
+/* ============================================================================
+   CENTRALIZED HEADER COLOR SYSTEM
+   ============================================================================ */
+
+:root {
+  /* Primary header colors - change these to update all headers */
+  --header-background: #000000;
+  --header-text: #ffffff;
+  --header-border: rgba(255, 255, 255, 0.3);
+}
+
+/* ============================================================================
+   SECTION HEADERS (Sections 1, 2, 3, 4)
+   ============================================================================ */
+
+.section-header {
+  background: var(--header-background) !important;
+  color: var(--header-text) !important;
+  padding: 8px 12px !important;
+  font-weight: bold !important;
+  font-size: 14px !important;
+  text-align: center !important;
+  margin-bottom: 15px !important;
+  border-radius: 4px !important;
+  position: relative !important;
+  overflow: visible !important;
+  border: none !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Section header drag indicator */
+.section-header .drag-indicator {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: inline-block !important;
+  color: var(--header-text) !important;
+  z-index: 2 !important;
+  float: right !important;
+  font-size: 12px !important;
+  margin-right: 8px !important;
+  background-color: transparent !important;
+  padding: 2px 4px !important;
+  border-radius: 3px !important;
+}
+
+/* ============================================================================
+   FIELD LIST SIDEBAR HEADERS (ONLY HEADERS, NOT FIELD ITEMS)
+   ============================================================================ */
+
+
+
+/* ============================================================================
+   TABLE HEADERS (Item Details Table)
+   ============================================================================ */
+
+.itemtable th {
+  background: var(--header-background) !important;
+  color: var(--header-text) !important;
+  padding: 12px;
+  font-weight: bold;
+  text-align: center;
+  border: 1px solid #e5e7eb;
+}
+
+
+
+.mirror-content .itemtable th {
+  background: var(--header-background) !important;
+  color: var(--header-text) !important;
+  padding: 12px;
+  font-weight: bold;
+  text-align: center;
+  font-size: 12px;
+}
+
+/* ============================================================================
+   SHIPPING DETAILS HEADERS
+   ============================================================================ */
+
+.shipping-details-header {
+  background: var(--header-background) !important;
+  color: var(--header-text) !important;
+  padding: 8px 12px !important;
+  font-weight: bold !important;
+  text-align: center !important;
+  margin-bottom: 15px !important;
+  border-radius: 4px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+/* ============================================================================
+   COMMENTS AND TOTALS HEADERS
+   ============================================================================ */
+
+.comments-header,
+.totals-header {
+  background: var(--header-background) !important;
+  color: var(--header-text) !important;
+  padding: 8px 12px !important;
+  font-weight: bold !important;
+  text-align: center !important;
+  margin-bottom: 15px !important;
+  border-radius: 4px !important;
+}
+
+/* ============================================================================
+   CHANGE HISTORY HEADER
+   ============================================================================ */
+
+.change-history-section .section-header {
+  background: var(--header-background) !important;
+  color: var(--header-text) !important;
+  padding: 15px 20px !important;
+  font-weight: bold !important;
+  border-radius: 8px 8px 0 0 !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}

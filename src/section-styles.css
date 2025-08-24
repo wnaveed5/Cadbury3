@@ -1,0 +1,1758 @@
+/* ============================================================================
+   ALL SECTION STYLES - CONSOLIDATED
+   ============================================================================ */
+
+/* Major sections container for group dragging */
+.major-sections-container {
+  width: 100%;
+  position: relative;
+}
+
+/* Individual section wrapper within group */
+.individual-section {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Remove right margin from the last individual section (section 4) */
+.individual-section:last-child {
+  margin-right: 0 !important;
+}
+
+/* Ensure sections 3 and 4 have identical styling */
+.individual-section .section-3,
+.individual-section .section-4 {
+  margin: 0 !important;
+  padding: 15px !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Remove right margin specifically from section 4's sortable wrapper */
+.individual-section:last-child .sortable-section {
+  margin-right: 0 !important;
+}
+
+/* Ensure vendor-shipping-columns children have proper spacing */
+.vendor-shipping-columns .individual-section {
+  margin: 0 !important;
+}
+
+.vendor-shipping-columns .individual-section:last-child {
+  margin-right: 0 !important;
+}
+
+/* Target the specific nested structure to remove right margin from section 4 */
+.vendor-shipping-columns .individual-section:last-child .sortable-section,
+.vendor-shipping-columns .individual-section:last-child .section-4,
+.vendor-shipping-columns .individual-section:last-child .section-content {
+  margin-right: 0 !important;
+  padding-right: 15px !important;
+}
+
+/* Ensure the section-4 container itself has no right margin */
+.section-4 {
+  margin-right: 0 !important;
+}
+
+/* Remove any potential right padding/margin from the sortable wrapper of section 4 */
+.sortable-section.section-4 {
+  margin-right: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Comprehensive fix for section 4 right margin issue */
+.vendor-shipping-columns > .individual-section:nth-child(2),
+.vendor-shipping-columns > .individual-section:last-child {
+  margin-right: 0 !important;
+  padding-right: 0 !important;
+}
+
+.vendor-shipping-columns > .individual-section:nth-child(2) *,
+.vendor-shipping-columns > .individual-section:last-child * {
+  margin-right: 0 !important;
+}
+
+/* Ensure consistent styling for both sections 3 and 4 */
+[data-section="3"],
+[data-section="4"],
+.section-3,
+.section-4,
+.sortable-section[data-section="3"],
+.sortable-section[data-section="4"] {
+  margin-right: 0 !important;
+  border: 2px solid #ddd !important; /* Ensure border is consistent */
+}
+
+
+
+/* ULTIMATE FIX: Override any and all right margin/padding issues */
+.vendor-shipping-columns,
+.vendor-shipping-columns * {
+  box-sizing: border-box !important;
+}
+
+.vendor-shipping-columns > *:last-child,
+.vendor-shipping-columns > *:last-child *,
+.vendor-shipping-columns .individual-section:nth-child(2),
+.vendor-shipping-columns .individual-section:nth-child(2) * {
+  margin-right: 0 !important;
+  padding-right: 15px !important; /* Only internal padding, no margin */
+}
+
+/* Force the container to not overflow */
+.form-content .vendor-shipping-columns {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+  margin-right: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Add Row Button Styling */
+.add-row-section {
+  margin-top: 15px !important;
+  text-align: center !important;
+  padding: 15px !important;
+  background-color: #f8fafc !important;
+  border: 2px dashed #d1d5db !important;
+  border-radius: 4px !important;
+  transition: all 0.2s ease !important;
+}
+
+.add-row-section:hover {
+  border-color: #3b82f6 !important;
+  background-color: #eff6ff !important;
+}
+
+.add-row-btn {
+  background: #10b981 !important;
+  color: white !important;
+  border: none !important;
+  padding: 8px 16px !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+.add-row-btn:hover {
+  background: #059669 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3) !important;
+}
+
+/* Add Column Button Styling */
+.add-column-section {
+  margin-top: 10px !important;
+  text-align: center !important;
+  padding: 10px !important;
+  background-color: #f8fafc !important;
+  border: 2px dashed #d1d5db !important;
+  border-radius: 4px !important;
+  transition: all 0.2s ease !important;
+}
+
+.add-column-section:hover {
+  border-color: #3b82f6 !important;
+  background-color: #eff6ff !important;
+}
+
+.add-column-btn {
+  background: white !important;
+  color: black !important;
+  border: 2px solid black !important;
+  padding: 8px 14px !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  transition: 0.2s !important;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 4px !important;
+}
+
+.add-column-btn:hover {
+  background: #f8f9fa !important;
+  transform: translateY(-1px) !important;
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 4px 8px !important;
+}
+
+/* Grouped Add Buttons - Right Aligned with Black Outline */
+.add-buttons-group {
+  margin-top: 15px !important;
+  text-align: right !important;
+  padding: 15px !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 4px !important;
+  transition: all 0.2s ease !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 12px !important;
+}
+
+.add-buttons-group:hover {
+  background-color: transparent !important;
+}
+
+.add-row-btn-grouped,
+.add-column-btn-grouped {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 2px solid #000000 !important;
+  padding: 8px 16px !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  transition: all 0.2s ease !important;
+  min-width: 120px !important;
+  justify-content: center !important;
+}
+
+.add-row-btn-grouped:hover,
+.add-column-btn-grouped:hover {
+  background: #000000 !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Ensure consistent button sizing across sections 3 and 4 */
+.section-3 .add-field-btn,
+.section-4 .add-field-btn {
+  width: 24px !important;
+  height: 24px !important;
+  font-size: 18px !important;
+  background: #10b981 !important;
+  color: white !important;
+  border-radius: 50% !important;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  min-width: 24px !important;
+  max-width: 24px !important;
+  min-height: 24px !important;
+  max-height: 24px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  text-align: center !important;
+}
+
+.section-3 .add-field-btn:hover,
+.section-4 .add-field-btn:hover {
+  background: #059669 !important;
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4) !important;
+}
+
+/* Ensure consistent add-field-section sizing */
+.section-3 .add-field-section,
+.section-4 .add-field-section {
+  min-height: 60px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Force consistent button sizing in vendor-shipping-columns */
+.vendor-shipping-columns .add-field-btn {
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  max-width: 24px !important;
+  min-height: 24px !important;
+  max-height: 24px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Override AvailableFields.css button styles for sections 3 and 4 */
+.vendor-shipping-columns .add-field-btn,
+.vendor-shipping-columns .add-field-btn:active,
+.vendor-shipping-columns .add-field-btn:focus {
+  background: #10b981 !important;
+  color: white !important;
+  border: none !important;
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  font-size: 18px !important;
+  font-weight: bold !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3) !important;
+  margin: 0 !important;
+  margin-right: 0 !important;
+  margin-left: 0 !important;
+  padding: 0 !important;
+  min-width: 24px !important;
+  max-width: 24px !important;
+  min-height: 24px !important;
+  max-height: 24px !important;
+  box-sizing: border-box !important;
+  position: absolute !important;
+  right: 5px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+}
+
+/* Override hover state specifically */
+.vendor-shipping-columns .add-field-btn:hover {
+  background: #059669 !important;
+  color: white !important;
+  border: none !important;
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 50% !important;
+  cursor: grabbing !important;
+  font-size: 18px !important;
+  font-weight: bold !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4) !important;
+  margin: 0 !important;
+  margin-right: 0 !important;
+  margin-left: 0 !important;
+  padding: 0 !important;
+  min-width: 24px !important;
+  max-width: 24px !important;
+  min-height: 24px !important;
+  max-height: 24px !important;
+  box-sizing: border-box !important;
+  position: absolute !important;
+  right: 5px !important;
+  top: 50% !important;
+  transform: translateY(-50%) scale(1.1) !important;
+}
+
+/* Ensure parent containers also expand fully */
+.section-container,
+.major-sections-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Make sure the DraggableGroupHandle container expands fully */
+.major-sections-container > div,
+.section-container > div {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* ============================================================================
+   SECTION PADDING CLASSES
+   ============================================================================ */
+
+/* Section padding without right padding */
+.section-padding-no-right {
+  padding: 15px 0 15px 15px !important; /* top right bottom left - no right padding */
+}
+
+.section-padding-no-right-center {
+  padding: 15px 0 15px 15px !important; /* top right bottom left - no right padding for centered content */
+}
+
+/* Standard section padding */
+.section-padding-standard {
+  padding: 15px !important;
+}
+
+/* ============================================================================
+   SECTIONS 1 & 2 STYLES - COMPANY INFO & PURCHASE ORDER
+   ============================================================================ */
+
+/* Container for sections 1&2 to display side by side */
+.section-container {
+  display: flex !important;
+  gap: 40px !important; /* Same gap as sections 3&4 */
+  margin: 0 0 40px 0 !important;
+  min-height: 200px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 0 !important;
+  position: relative !important;
+}
+
+/* Section 1: Company Info */
+.section-1-company-info {
+  flex: 1 1 100% !important; /* Take full width of droppable zone */
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 15px !important; /* Equal padding on all sides */
+  box-sizing: border-box !important;
+  border: 1px solid #e5e7eb !important;
+  background: transparent !important; /* No background */
+  border-radius: 8px !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Section 2: Purchase Order */
+.section-2-purchase-order {
+  flex: 1 1 100% !important; /* Take full width of droppable zone */
+  width: 100% !important;
+  min-width: 0 !important;
+  text-align: center;
+  margin: 0 !important;
+  padding: 15px !important; /* Equal padding on all sides */
+  box-sizing: border-box !important;
+  border: 1px solid #e5e7eb !important;
+  overflow: hidden !important;
+  background: transparent !important; /* No background */
+  border-radius: 8px !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* ============================================================================
+   SECTIONS 3 & 4 STYLES - VENDOR & SHIP-TO
+   ============================================================================ */
+
+/* Container for sections 3&4 */
+.vendor-shipping-columns {
+  display: flex !important;
+  gap: 40px !important;
+  margin: 0 0 40px 0 !important;
+  min-height: 200px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 0 !important;
+  /* Ensure no extra margins or padding that could cause right overflow */
+  overflow: visible !important;
+  /* Ensure the flex container doesn't add extra space */
+  align-items: stretch !important;
+  /* Make it expand to full width of parent */
+  flex: 1 !important;
+}
+
+/* Section 3: Vendor */
+.vendor-column {
+  flex: 1 1 100% !important; /* Take full width of droppable zone */
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 15px !important;
+  box-sizing: border-box !important;
+  border: 1px solid #e5e7eb !important;
+  background: transparent !important;
+  border-radius: 8px !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Section 4: Ship To */
+.ship-to-column {
+  flex: 1 1 100% !important; /* Take full width of droppable zone */
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 15px !important;
+  box-sizing: border-box !important;
+  border: 1px solid #e5e7eb !important;
+  background: transparent !important;
+  border-radius: 8px !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* ============================================================================
+   SECTION DROP ZONES - DROP FIELDS ON TOP OF SECTIONS
+   ============================================================================ */
+
+/* Section drop zone - entire section becomes droppable */
+.section-drop-zone {
+  position: relative;
+  width: 100%;
+  min-height: 200px;
+  border: 2px dashed rgba(59, 130, 246, 0.3);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  z-index: 1;
+}
+
+/* Show drop zone borders on hover for debugging */
+.section-drop-zone:hover {
+  border-color: rgba(59, 130, 246, 0.6);
+  background-color: rgba(59, 130, 246, 0.02);
+}
+
+/* Drop zone overlay - appears when dragging over section */
+.drop-zone-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(16, 185, 129, 0.15);
+  border: 3px solid #10b981;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(1px);
+  pointer-events: none;
+}
+
+/* Drop zone content */
+.drop-zone-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  color: #065f46;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.drop-zone-icon {
+  font-size: 24px;
+  animation: bounce 0.6s ease-in-out infinite;
+}
+
+.drop-zone-text {
+  white-space: nowrap;
+}
+
+/* Active state when dragging over */
+.section-drop-zone.drop-zone-active {
+  border-color: #10b981;
+  transform: scale(1.01);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.15);
+}
+
+/* Bounce animation for active drop zone */
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-5px);
+  }
+  60% {
+    transform: translateY(-3px);
+  }
+}
+
+
+
+
+
+
+
+
+
+/* ============================================================================
+   SECTION HEADERS - ALL SECTIONS
+   ============================================================================ */
+
+/* Section headers */
+.section-header {
+  border-bottom: 1px solid #e5e7eb !important;
+  margin-bottom: 15px !important;
+  padding-bottom: 10px !important;
+  position: relative !important;
+  overflow: visible !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+}
+
+/* Section header drag indicator */
+.section-header .drag-indicator {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: inline-block !important;
+  z-index: 2 !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  font-size: 16px !important;
+  color: #8b5cf6 !important;
+  font-weight: bold !important;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+  transition: all 0.2s ease !important;
+  cursor: grab !important;
+  pointer-events: auto !important;
+  background-color: white !important;
+  padding: 6px 10px !important;
+  border-radius: 6px !important;
+  border: 2px solid #8b5cf6 !important;
+  box-shadow: 0 2px 4px rgba(139, 92, 246, 0.2) !important;
+}
+
+/* Section 5 shipping column drag indicators - white only */
+.section-5 .section-header .drag-indicator,
+.sortable-shipping-column-header .section-header .drag-indicator {
+  color: white !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  font-size: 14px !important;
+}
+
+.section-header .drag-indicator:hover {
+  color: white !important;
+  transform: translateY(-50%) scale(1.05) !important;
+  background-color: #8b5cf6 !important;
+  border-color: #7c3aed !important;
+  box-shadow: 0 4px 8px rgba(139, 92, 246, 0.3) !important;
+}
+
+/* Section 5 shipping column drag indicators hover - simple */
+.section-5 .section-header .drag-indicator:hover,
+.sortable-shipping-column-header .section-header .drag-indicator:hover {
+  color: white !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  transform: translateY(-50%) scale(1.05) !important;
+}
+
+.section-header .drag-indicator:active {
+  cursor: grabbing !important;
+}
+
+/* Section title styling */
+.section-title {
+  background: #333333 !important;
+  color: white !important;
+  padding: 8px 12px !important;
+  font-weight: bold !important;
+  font-size: 14px !important;
+  text-align: center !important;
+  margin-bottom: 15px !important;
+  border-radius: 4px !important;
+}
+
+/* Section Header with Drag Handle */
+.section-header-with-handle {
+  display: flex !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  margin-bottom: 15px !important;
+}
+
+.section-header-with-handle .section-title {
+  margin-bottom: 0 !important;
+  margin-left: 10px !important;
+}
+
+/* Section drag handle */
+.section-drag-handle {
+  cursor: grab !important;
+  color: #8b5cf6 !important;
+  font-weight: bold !important;
+  font-size: 16px !important;
+  padding: 8px 12px !important;
+  border-radius: 4px !important;
+  transition: all 0.2s ease !important;
+  user-select: none !important;
+  background: white !important;
+  border: 2px solid #8b5cf6 !important;
+  margin-right: 10px !important;
+  min-width: 40px !important;
+  text-align: center !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: inline-block !important;
+  box-shadow: 0 2px 4px rgba(139, 92, 246, 0.2) !important;
+  z-index: 1000 !important;
+  position: relative !important;
+}
+
+.section-drag-handle:hover {
+  color: #7c3aed !important;
+  background-color: #f3f4f6 !important;
+  border-color: #7c3aed !important;
+  cursor: grabbing !important;
+}
+
+.section-drag-handle:active {
+  cursor: grabbing !important;
+  transform: scale(1.1) !important;
+  background-color: #e5e7eb !important;
+}
+
+/* ============================================================================
+   SORTABLE SECTION STYLES - ALL SECTIONS
+   ============================================================================ */
+
+/* Sortable Section Styles */
+.sortable-section {
+  position: relative !important;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease !important;
+  cursor: grab !important;
+}
+
+.sortable-section:active {
+  cursor: grabbing !important;
+}
+
+.sortable-section[data-is-dragging="true"] {
+  transform: rotate(1deg) scale(1.02) !important;
+  box-shadow: 0 12px 24px rgba(139, 92, 246, 0.3) !important;
+  z-index: 1000 !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  backdrop-filter: blur(2px) !important;
+}
+
+.sortable-section[data-is-over="true"] {
+  box-shadow: inset 0 0 0 2px rgba(139, 92, 246, 0.4) !important;
+  background: rgba(139, 92, 246, 0.05) !important;
+  transform: scale(1.01) !important;
+}
+
+/* Green highlighting when palette fields are dragged over sections */
+.sortable-section[data-palette-over="true"],
+.section-1-company-info[data-palette-over="true"],
+.section-2-purchase-order[data-palette-over="true"],
+.section-3[data-palette-over="true"],
+.section-4[data-palette-over="true"] {
+  border: 3px solid #10b981 !important;
+  background: rgba(16, 185, 129, 0.15) !important;
+  transform: scale(1.02) !important;
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3) !important;
+  transition: all 0.2s ease-in-out !important;
+  z-index: 100 !important;
+}
+
+/* Enhanced green highlighting with animation */
+.sortable-section[data-palette-over="true"]::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, 
+    rgba(16, 185, 129, 0.1) 0%, 
+    rgba(16, 185, 129, 0.2) 50%, 
+    rgba(16, 185, 129, 0.1) 100%);
+  border-radius: inherit;
+  animation: greenPulse 2s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Green pulse animation */
+@keyframes greenPulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.02);
+  }
+}
+
+/* Drop indicator styles */
+.drop-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.drop-indicator > div,
+.drop-indicator .drop-message {
+  background: rgba(16, 185, 129, 0.95);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 25px;
+  font-weight: bold;
+  font-size: 14px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  animation: dropPulse 1s ease-in-out infinite;
+  white-space: nowrap;
+}
+
+/* Palette over state for sections */
+.section-1-company-info.palette-over,
+.section-2-purchase-order.palette-over,
+.section-3.palette-over,
+.section-4.palette-over,
+.section-5.palette-over {
+  border: 3px solid #10b981 !important;
+  background: rgba(16, 185, 129, 0.15) !important;
+  transform: scale(1.02) !important;
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3) !important;
+  transition: all 0.2s ease-in-out !important;
+  position: relative;
+}
+
+/* Enhanced green highlighting with animation for palette over */
+.section-1-company-info.palette-over::before,
+.section-2-purchase-order.palette-over::before,
+.section-3.palette-over::before,
+.section-4.palette-over::before,
+.section-5.palette-over::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, 
+    rgba(16, 185, 129, 0.1) 0%, 
+    rgba(16, 185, 129, 0.2) 50%, 
+    rgba(16, 185, 129, 0.1) 100%);
+  border-radius: inherit;
+  animation: greenPulse 2s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes dropPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+}
+
+.sortable-section:hover {
+  transform: translateY(-2px) !important;
+}
+
+/* Enhanced animations for sections 5 and 6 */
+.section-5, .section-6 {
+  position: relative !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border-radius: 8px !important;
+}
+
+/* Dragging state styles */
+.section-5[data-is-dragging="true"], .section-6[data-is-dragging="true"] {
+  transform: rotate(1deg) !important;
+  box-shadow: 0 12px 24px rgba(139, 92, 246, 0.3), 
+              0 0 0 1px rgba(139, 92, 246, 0.2) !important;
+  z-index: 1000 !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  backdrop-filter: blur(2px) !important;
+}
+
+/* Hover state for sections */
+.section-5:hover, .section-6:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15) !important;
+}
+
+/* Over state when dragging over another section */
+.section-5[data-is-over="true"], .section-6[data-is-over="true"] {
+  box-shadow: inset 0 0 0 2px rgba(139, 92, 246, 0.4) !important;
+  background: rgba(139, 92, 246, 0.05) !important;
+}
+
+/* ============================================================================
+   LEFT DRAG HANDLE STYLES - SECTIONS 5 & 6
+   ============================================================================ */
+
+.left-drag-handle {
+  position: absolute !important;
+  left: -50px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  background: white !important;
+  color: #8b5cf6 !important;
+  border: 2px solid #8b5cf6 !important;
+  padding: 4px 6px !important;
+  border-radius: 6px !important;
+  cursor: grab !important;
+  font-size: 16px !important;
+  font-weight: bold !important;
+  font-family: monospace !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+  pointer-events: auto !important;
+  transition: all 0.2s ease !important;
+  z-index: 1000 !important;
+  user-select: none !important;
+  width: auto !important;
+  text-align: center !important;
+  line-height: 1 !important;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.15) !important;
+  min-width: 20px !important;
+  writing-mode: vertical-rl !important;
+  text-orientation: mixed !important;
+  transform: translateY(-50%) rotate(180deg) !important;
+}
+
+.left-drag-handle:hover {
+  opacity: 1 !important;
+  transform: translateY(-50%) rotate(180deg) !important;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25) !important;
+  border-color: #7c3aed !important;
+  background: #fefbff !important;
+}
+
+.left-drag-handle:active {
+  cursor: grabbing !important;
+  transform: translateY(-50%) rotate(180deg) !important;
+  box-shadow: 0 2px 6px rgba(139, 92, 246, 0.3) !important;
+  border-color: #6d28d9 !important;
+}
+
+/* Enhanced drag handle when parent is being dragged */
+.section-5[data-is-dragging="true"] .left-drag-handle,
+.section-6[data-is-dragging="true"] .left-drag-handle {
+  transform: translateY(-50%) !important;
+  box-shadow: 0 6px 12px rgba(139, 92, 246, 0.4) !important;
+  border-color: #7c3aed !important;
+  background: #fefbff !important;
+}
+
+/* ============================================================================
+   COLUMN HEADER DRAGGING STYLES
+   ============================================================================ */
+
+/* Line Item Column Dragging Styles */
+.draggable-column-header {
+  position: relative !important;
+}
+
+.sortable-column-header {
+  display: contents !important;
+}
+
+.sortable-column-header > th {
+  display: table-cell !important;
+  background: var(--header-background, #333333) !important;
+  color: var(--header-text, white) !important;
+  padding: 12px !important;
+  font-weight: bold !important;
+  text-align: center !important;
+  border: 1px solid #e5e7eb !important;
+  cursor: grab !important;
+  user-select: none !important;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  min-width: 60px !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  position: relative !important;
+}
+
+.sortable-column-header > th:hover {
+  background: var(--header-background-hover, #4a4a4a) !important;
+  transform: translateY(-2px) scale(1.02) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.sortable-column-header > th:active {
+  cursor: grabbing !important;
+  transform: translateY(-1px) scale(1.01) !important;
+  transition: all 0.1s ease !important;
+}
+
+.sortable-column-header.dragging > th {
+  opacity: 0.95 !important;
+  transform: rotate(0.5deg) scale(1.03) !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ============================================================================
+   COMMENTS AND TOTALS SECTION STYLES
+   ============================================================================ */
+
+/* Comments and Totals Section - Optimized Sizing */
+.comments-totals-section {
+  display: flex !important;
+  gap: 15px !important;
+  margin: 5px 0 0 0 !important;
+  align-items: flex-start !important; /* Align to top to prevent stretching */
+  max-height: 200px !important;
+}
+
+.comments-section {
+  flex: 1 !important;
+  min-height: auto !important;
+  margin-bottom: 0 !important;
+  border: 1px solid #e5e7eb !important;
+  height: fit-content !important;
+  max-height: 310px !important;
+}
+
+.totals-section {
+  flex: 0 0 300px !important;
+  min-height: auto !important;
+  margin-bottom: 0 !important;
+  border: 1px solid #e5e7eb !important;
+  padding: 8px !important;
+  height: fit-content !important; /* Only take up needed space */
+  max-height: 280px !important;
+}
+
+/* Totals section field styling */
+.totals-section .total-row {
+  position: relative !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  margin: 4px 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.totals-section .total-row:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.totals-section .total-row .field-controls {
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+  flex-shrink: 0;
+  min-width: 40px;
+}
+
+.totals-section .total-row .field-label {
+  flex: 1;
+  font-weight: 600;
+  color: #374151;
+  padding-left: 0;
+  text-align: left;
+}
+
+.totals-section .total-row .editable-field,
+.totals-section .total-row .calculated-field {
+  min-width: 80px;
+  text-align: right;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+}
+
+.totals-section .total-row .calculated-field {
+  background: #f0f9ff;
+  border-color: #0ea5e9;
+  color: #0c4a6e;
+  font-weight: 600;
+}
+
+.totals-section .total-row.total-final {
+  border-color: #059669;
+  background: #f0fdf4;
+}
+
+.totals-section .total-row.total-final .field-label {
+  padding-left: 0;
+  margin-left: 0;
+  text-align: left;
+}
+
+.totals-section .total-row.total-final .total-field {
+  background: #dcfce7;
+  border-color: #059669;
+  color: #065f46;
+  font-weight: 700;
+  font-size: 1.1em;
+}
+
+.comments-content {
+  padding: 8px !important;
+  min-height: 50px !important; /* Reduced for shorter height */
+  max-height: none !important; /* Remove max-height restriction */
+  height: auto !important; /* Let content determine height */
+}
+
+.comments-content .editable-field {
+  display: block !important;
+  min-height: 60px !important; /* Reasonable minimum for text input */
+  height: auto !important; /* Auto-expand with content */
+  max-height: 200px !important; /* Prevent excessive growth */
+  padding: 8px !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 4px !important;
+  background: white !important;
+  overflow-y: auto !important;
+  resize: vertical !important; /* Allow user to resize if needed */
+  word-wrap: break-word !important;
+  line-height: 1.4 !important;
+}
+
+/* Comments section field styling */
+.comments-section .comments-field-item {
+  position: relative !important;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 12px;
+  margin: 8px 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.comments-section .comments-field-item:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.comments-section .comments-field-item.main-comment {
+  border-color: #3b82f6;
+  background: #f0f9ff;
+}
+
+.comments-section .comments-field-item .field-controls {
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.comments-section .comments-field-item .field-label {
+  flex: 1;
+  font-weight: 600;
+  color: #374151;
+  margin-right: 12px;
+  min-width: 200px;
+  flex-shrink: 0;
+}
+
+.comments-section .comments-field-item .editable-field {
+  flex: 2;
+  min-height: 60px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  outline: none;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+.comments-section .comments-field-item .editable-field:focus {
+  border-color: #3b82f6;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.comments-section .comments-field-item .editable-field[data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* ============================================================================
+   CONTACT SECTION STYLING
+   ============================================================================ */
+
+.contact-section .contact-field-item {
+  position: relative !important;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 12px;
+  margin: 8px 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.contact-section .contact-field-item:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.contact-section .contact-field-item.main-contact {
+  border-color: #3b82f6;
+  background: #f0f9ff;
+}
+
+.contact-section .contact-field-item .field-controls {
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.contact-section .contact-field-item .field-label {
+  flex: 1;
+  font-weight: 600;
+  color: #374151;
+  margin-right: 12px;
+  min-width: 200px;
+  flex-shrink: 0;
+}
+
+.contact-section .contact-field-item .editable-field {
+  flex: 2;
+  min-height: 60px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  outline: none;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+.contact-section .contact-field-item .editable-field:focus {
+  border-color: #3b82f6;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.contact-section .contact-field-item .editable-field[data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* ============================================================================
+   SECTION CONTENT STYLES
+   ============================================================================ */
+
+.section-content {
+  padding: 0 !important;
+}
+
+/* ============================================================================
+   CONTACT AND BUTTON SECTION STYLES
+   ============================================================================ */
+
+/* Push Contact Information and buttons lower */
+.contact-section {
+  margin-top: 120px !important;
+  padding-top: 20px !important;
+}
+
+.contact-content {
+  margin-top: 40px !important;
+}
+
+.contact-content strong {
+  display: block !important;
+  margin-bottom: 10px !important;
+}
+
+.contact-content .editable-field {
+  display: block !important;
+}
+
+.button-section {
+  margin-top: 30px !important;
+  text-align: center !important;
+}
+
+/* ============================================================================
+   FIELD STYLES - ALL SECTIONS
+   ============================================================================ */
+
+/* Purchase Order Title Styling - Works in any section */
+.title-field {
+  font-size: 32px !important;
+  font-weight: bold !important;
+  color: #000000 !important;
+  text-align: center;
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+/* Field containers */
+.company-fields-container,
+.po-fields-container,
+.vendor-fields-container,
+.ship-to-fields-container {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  background-color: transparent !important;
+  border: none !important;
+  padding: 10px !important;
+  border-radius: 4px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Field items */
+.field-item,
+.po-field-item,
+.vendor-field-item,
+.ship-to-field-item {
+  background-color: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 4px !important;
+  padding: 12px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  margin-bottom: 8px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  min-height: 45px !important;
+}
+
+/* Field content layout */
+.field-content,
+.po-field-content,
+.vendor-field-content,
+.ship-to-field-content {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  flex: 1 !important;
+}
+
+/* Field controls positioning */
+.field-controls {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-right: 8px !important;
+}
+
+/* Field labels */
+.field-label,
+.po-field-label,
+.vendor-field-label,
+.ship-to-field-label {
+  font-weight: normal !important;
+  font-size: 14px !important;
+  min-width: 60px !important;
+  color: #333333 !important;
+}
+
+/* ============================================================================
+   DRAG HANDLE STYLES - ALL SECTIONS
+   ============================================================================ */
+
+/* Drag handle styling */
+.drag-handle {
+  background-color: white !important;
+  border: 2px solid #000000 !important;
+  border-radius: 6px !important;
+  padding: 4px 8px !important;
+  cursor: grab !important;
+  color: #000000 !important;
+  font-weight: bold !important;
+  font-size: 14px !important;
+  transition: all 0.2s ease !important;
+  user-select: none !important;
+  min-width: 30px !important;
+  text-align: center !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 10 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+  line-height: 1 !important;
+}
+
+.drag-handle:hover {
+  background-color: #000000 !important;
+  border-color: #000000 !important;
+  color: white !important;
+  cursor: grabbing !important;
+  transform: scale(1.05) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+.drag-handle:active {
+  cursor: grabbing !important;
+  transform: scale(1.1) !important;
+}
+
+/* ============================================================================
+   BUTTON STYLES - ALL SECTIONS
+   ============================================================================ */
+
+/* Remove field button */
+.remove-field-btn-x,
+.remove-field-btn {
+  position: absolute !important;
+  top: 5px !important;
+  right: 5px !important;
+  background: none !important;
+  border: none !important;
+  font-size: 18px !important;
+  font-weight: bold !important;
+  color: #000000 !important;
+  cursor: pointer !important;
+  width: 20px !important;
+  height: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+  z-index: 1000 !important;
+  transition: all 0.2s ease !important;
+  pointer-events: auto !important;
+}
+
+.remove-field-btn-x:hover,
+.remove-field-btn:hover {
+  background: #f3f4f6 !important;
+  color: #dc2626 !important;
+  transform: scale(1.1) !important;
+}
+
+/* Add field button - consistent sizing for all sections */
+.add-field-btn {
+  background: #10b981 !important;
+  border: none !important;
+  font-size: 18px !important;
+  font-weight: bold !important;
+  color: white !important;
+  cursor: pointer !important;
+  width: 24px !important;
+  height: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+  position: absolute !important;
+  right: 5px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  border-radius: 50% !important;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3) !important;
+  line-height: 1 !important;
+  padding: 0 !important;
+  text-align: center !important;
+}
+
+.add-field-btn:hover {
+  background: #059669 !important;
+  transform: translateY(-50%) scale(1.1) !important;
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4) !important;
+}
+
+/* Add field section - consistent styling for all sections */
+.add-field-section {
+  background-color: #f8fafc !important;
+  border: 2px dashed #d1d5db !important;
+  padding: 15px !important;
+  border-radius: 4px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  text-align: center !important;
+  margin-top: 15px !important;
+  position: relative !important;
+  transition: all 0.2s ease !important;
+  min-height: 60px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.add-field-section:hover {
+  border-color: #3b82f6 !important;
+  background-color: #eff6ff !important;
+}
+
+/* Section 5 - Shipping Details */
+.section-5 {
+  grid-column: 1 / -1;
+  margin-bottom: 20px;
+}
+
+.section-5 .shipping-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.section-5 .section-header {
+  padding: 12px;
+  background-color: #f8fafc;
+  border-bottom: 1px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
+  font-weight: 600;
+  font-size: 14px;
+  text-align: center;
+  color: #374151;
+}
+
+.section-5 .section-header:last-child {
+  border-right: none;
+}
+
+.section-5 .shipping-field {
+  padding: 15px;
+  border-right: 1px solid #e5e7eb;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+}
+
+.section-5 .shipping-field:last-child {
+  border-right: none;
+}
+
+.section-5 .editable-field {
+  font-size: 14px;
+  color: #374151;
+  width: 100%;
+  outline: none;
+}
+
+.section-5 .editable-field[data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* Sortable Shipping Column Headers */
+.sortable-shipping-column-header {
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.sortable-shipping-column-header:hover {
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+.sortable-shipping-column-header.dragging {
+  opacity: 0.8;
+  transform: rotate(1deg);
+  z-index: 1000;
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.sortable-shipping-column-header .section-header {
+  transition: all 0.2s ease;
+}
+
+.sortable-shipping-column-header:hover .section-header {
+  background-color: #e0e7ff !important;
+  color: #3730a3 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+/* Items Section Header */
+.items-section .section-header {
+  border-radius: 8px 8px 0 0;
+  border: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.items-section .itemtable {
+  border-radius: 0 0 8px 8px;
+  border-top: none;
+}
+
+/* Enhanced add field button styles for sections */
+.add-field-section {
+  position: relative !important;
+  padding-right: 30px !important; /* Make space for the button on the right */
+}
+
+
+
+/* ============================================================================
+   SWAP SECTIONS BUTTON STYLES
+   ============================================================================ */
+
+/* Swap Sections Button Styles */
+.swap-sections-container {
+  display: flex !important;
+  justify-content: center !important;
+  margin: 20px 0 !important;
+  gap: 10px !important;
+}
+
+.swap-sections-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  border: none !important;
+  padding: 10px 20px !important;
+  border-radius: 25px !important;
+  cursor: pointer !important;
+  font-weight: bold !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+}
+
+.swap-sections-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+.swap-sections-btn:active {
+  transform: translateY(0) !important;
+}
+
+.swap-sections-btn:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.5) !important;
+}
+
+/* ============================================================================
+   CHANGE TRACKING SECTION STYLES
+   ============================================================================ */
+
+.change-tracking-section {
+  margin-top: 30px !important;
+  padding: 20px !important;
+  background-color: #f8fafc !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 8px !important;
+}
+
+/* ============================================================================
+   HOVER EFFECTS - ALL SECTIONS
+   ============================================================================ */
+
+/* Field hover effects */
+.section-1-company-info .field-item:hover,
+.section-2-purchase-order .po-field-item:hover,
+.vendor-column .vendor-field-item:hover,
+.ship-to-column .ship-to-field-item:hover {
+  background-color: #f8fafc !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+/* ============================================================================
+   RESPONSIVE STYLES - ALL SECTIONS
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  .section-1-company-info,
+  .section-2-purchase-order,
+  .vendor-column,
+  .ship-to-column {
+    width: 100% !important;
+    margin-bottom: 20px !important;
+  }
+  
+  .section-container,
+  .vendor-shipping-columns {
+    flex-direction: column !important;
+    gap: 20px !important;
+  }
+  
+  .comments-totals-section {
+    flex-direction: column !important;
+    gap: 20px !important;
+  }
+  
+  .totals-section {
+    flex: 1 1 auto !important;
+    max-height: none !important;
+  }
+}
+
+/* ============================================================================
+   MIRROR CONTENT STYLES
+   ============================================================================ */
+
+.mirror-content .section-container {
+  margin-bottom: 20px !important;
+}
+
+.mirror-content .draggable-shipping-section {
+  margin-bottom: 20px !important;
+}
+
+/* ============================================================================
+   REMOVE BUTTON STYLES - TOTALS AND COMMENTS SECTIONS
+   ============================================================================ */
+
+/* Remove button styling for totals, comments, and contact sections */
+.totals-section .remove-field-btn,
+.comments-section .remove-field-btn,
+.contact-section .remove-field-btn {
+  position: absolute !important;
+  top: 5px !important;
+  right: 5px !important;
+  background: #dc2626 !important;
+  border: 2px solid #000000 !important;
+  color: white !important;
+  cursor: pointer !important;
+  width: 20px !important;
+  height: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+  z-index: 1000 !important;
+  transition: all 0.2s ease !important;
+  pointer-events: auto !important;
+  font-size: 16px !important;
+  font-weight: bold !important;
+}
+
+.totals-section .remove-field-btn:hover,
+.comments-section .remove-field-btn:hover,
+.contact-section .remove-field-btn:hover {
+  background: #b91c1c !important;
+  border-color: #000000 !important;
+  transform: scale(1.1) !important;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3) !important;
+}
+
+.totals-section .remove-field-btn:active,
+.comments-section .remove-field-btn:active,
+.contact-section .remove-field-btn:active {
+  transform: scale(0.95) !important;
+}
