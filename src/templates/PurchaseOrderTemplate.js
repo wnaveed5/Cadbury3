@@ -1398,3 +1398,280 @@ export const fieldMappingUtils = {
     return template ? template.staticFields : [];
   }
 };
+
+// ============================================================================
+// NETSUITE TEMPLATE GENERATION
+// ============================================================================
+
+/**
+ * Generate NetSuite-compatible XML template with FreeMarker syntax
+ * This function creates templates that can be used directly in NetSuite
+ * instead of generating static XML with hardcoded values
+ */
+export function generateNetSuiteTemplate(formData, options = {}) {
+  console.log('🔀 NETSUITE TEMPLATE VERSION - generateNetSuiteTemplate called');
+  console.log('📅 NetSuite template updated at:', new Date().toISOString());
+  console.log('📊 Raw form data received:', formData);
+  
+  // Get current header colors for template generation
+  const headerColors = getHeaderColors();
+  console.log('🎨 Current header colors:', headerColors);
+  
+  // Process and validate form data using the FormDataMapper
+  let processedData;
+  try {
+    processedData = processFormData(formData, {
+      calculateTotals: options.calculateTotals !== false,
+      validate: options.validate !== false,
+      formatForXML: true,
+      throwOnValidationError: options.throwOnValidationError || false
+    });
+    console.log('📊 Processed form data:', processedData);
+  } catch (error) {
+    console.error('❌ Form data processing failed:', error);
+    if (options.throwOnValidationError) {
+      throw error;
+    }
+    // Fallback to using raw data
+    processedData = formData || {};
+  }
+  
+  // Merge processed data with original
+  const data = {
+    ...(processedData || {}),
+    ...(formData || {})
+  };
+
+  // IMPORTANT: For field ordering, use the original formData to preserve drag-and-drop order
+  const fieldOrderData = {
+    ...data,
+    companyFields: formData.companyFields || data.companyFields || [],
+    purchaseOrderFields: formData.purchaseOrderFields || data.purchaseOrderFields || [],
+    vendorFields: formData.vendorFields || data.vendorFields || [],
+    shipToFields: formData.shipToFields || data.shipToFields || []
+  };
+  
+  console.log('🔍 DEBUG: NetSuite fieldOrderData created with:');
+  console.log('🔍 DEBUG: - companyFields:', fieldOrderData.companyFields?.map(f => ({ id: f.id, label: f.label })));
+  
+  // Check which section should be on the left (same logic as original)
+  const sectionOrder = data.sectionOrder || {};
+  const sections1And2 = sectionOrder.sections1And2 || ['section1', 'section2'];
+  const leftSection = sections1And2[0];
+  
+  console.log('🔀 NetSuite Template - Section order:', { leftSection, sections1And2 });
+  
+  let leftColumn, rightColumn;
+  
+  if (leftSection === 'section1') {
+    // Company on left, Purchase Order on right
+    leftColumn = buildCompanyNetSuiteXML('left');
+    rightColumn = buildPurchaseOrderNetSuiteXML('right');
+    console.log('🔀 NetSuite Template - Using default order: Company left, Purchase Order right');
+  } else {
+    // Purchase Order on left, Company on right (sections swapped)
+    leftColumn = buildPurchaseOrderNetSuiteXML('left');
+    rightColumn = buildCompanyNetSuiteXML('right');
+    console.log('🔀 NetSuite Template - Using swapped order: Purchase Order left, Company right');
+  }
+  
+  // Build the complete NetSuite template with FreeMarker syntax
+  const netSuiteTemplate = `<?xml version="1.0"?>
+<!DOCTYPE pdf PUBLIC "-//big.faceless.org//report" "report-1.1.dtd">
+<pdf>
+<head>
+    <link name="NotoSans" type="font" subtype="truetype" src="\${nsfont.NotoSans_Regular}" src-bold="\${nsfont.NotoSans_Bold}" src-italic="\${nsfont.NotoSans_Italic}" src-bolditalic="\${nsfont.NotoSans_BoldItalic}" bytes="2" />
+    <macrolist>
+        <macro id="nlheader">
+            <table class="header" style="width: 100%;">
+                <tr>
+                    <td rowspan="3">
+                        <#if companyInformation.logoUrl?length != 0>
+                            <@filecabinet nstype="image" style="float: left; margin: 7px" src="\${companyInformation.logoUrl}" />
+                        </#if>
+                        <span class="nameandaddress">\${companyInformation.companyName}</span><br />
+                        <span class="nameandaddress">\${companyInformation.addressText}</span>
+                    </td>
+                    <td align="right"><span class="title">\${record@title}</span></td>
+                </tr>
+                <tr>
+                    <td align="right"><span class="number">#\${record.tranid}</span></td>
+                </tr>
+                <tr>
+                    <td align="right">\${record.trandate}</td>
+                </tr>
+            </table>
+        </macro>
+        <macro id="nlfooter">
+            <table class="footer" style="width: 100%;">
+                <tr>
+                    <td>
+                        <barcode codetype="code128" showtext="true" value="\${record.tranid}"/>
+                    </td>
+                    <td align="right">
+                        <pagenumber/> of <totalpages/>
+                    </td>
+                </tr>
+            </table>
+        </macro>
+    </macrolist>
+    <style>
+        * {
+            font-family: NotoSans, sans-serif;
+        }
+        table {
+            font-size: 9pt;
+            table-layout: fixed;
+        }
+        th {
+            font-weight: bold;
+            font-size: 8pt;
+            vertical-align: middle;
+            padding: 5px 6px 3px;
+            background-color: #e3e3e3;
+            color: #333333;
+        }
+        td {
+            padding: 4px 6px;
+        }
+        .header-company {
+            font-weight: bold;
+            font-size: 12pt;
+            color: #333333;
+        }
+        .nameandaddress {
+            font-size: 10pt;
+        }
+        .title {
+            font-size: 28pt;
+        }
+        .number {
+            font-size: 16pt;
+        }
+    </style>
+</head>
+<body header="nlheader" header-height="10%" footer="nlfooter" footer-height="20pt" padding="0.5in 0.5in 0.5in 0.5in" size="Letter">
+    <table style="width: 100%;">
+        <tr>
+            ${leftColumn}
+            ${rightColumn}
+        </tr>
+    </table>
+    
+    <!-- Vendor Information Section -->
+    <table style="width: 100%; margin-top: 20px;">
+        <tr>
+            <td style="width: 50%;">
+                <strong>Vendor Information:</strong><br/>
+                \${record.billaddress}
+            </td>
+            <td style="width: 50%;">
+                <strong>Ship To:</strong><br/>
+                \${record.shipaddress}
+            </td>
+        </tr>
+    </table>
+    
+    <!-- Line Items Section -->
+    <#if record.item?has_content>
+    <table class="itemtable" style="width: 100%; margin-top: 20px;">
+        <#list record.item as item>
+            <#if item_index==0>
+                <thead>
+                <tr>
+                    <th colspan="3" align="center">\${item.quantity@label}</th>
+                    <th colspan="12">\${item.item@label}</th>
+                    <th colspan="3">\${item.options@label}</th>
+                    <th colspan="4" align="right">\${item.rate@label}</th>
+                    <th colspan="4" align="right">\${item.amount@label}</th>
+                </tr>
+                </thead>
+            </#if>
+            <tr>
+                <td colspan="3" align="center">\${item.quantity}</td>
+                <td colspan="12">\${item.item}<br/>\${item.description}</td>
+                <td colspan="3">\${item.options}</td>
+                <td colspan="4" align="right">\${item.rate}</td>
+                <td colspan="4" align="right">\${item.amount}</td>
+            </tr>
+        </#list>
+    </table>
+    </#if>
+    
+    <!-- Totals Section -->
+    <table style="width: 100%; margin-top: 20px;">
+        <tr>
+            <td style="width: 70%;"></td>
+            <td style="width: 15%; text-align: right;"><strong>Subtotal:</strong></td>
+            <td style="width: 15%; text-align: right;">\${record.subtotal}</td>
+        </tr>
+        <tr>
+            <td style="width: 70%;"></td>
+            <td style="width: 15%; text-align: right;"><strong>Tax:</strong></td>
+            <td style="width: 15%; text-align: right;">\${record.taxtotal}</td>
+        </tr>
+        <tr>
+            <td style="width: 70%;"></td>
+            <td style="width: 15%; text-align: right;"><strong>Total:</strong></td>
+            <td style="width: 15%; text-align: right;">\${record.total}</td>
+        </tr>
+    </table>
+</body>
+</pdf>`;
+
+  console.log('📄 NetSuite Template generated successfully');
+  console.log('📄 Template preview (first 500 chars):', netSuiteTemplate.substring(0, 500));
+  
+  return netSuiteTemplate;
+
+  // Helper function to build Purchase Order section with NetSuite variables
+  function buildPurchaseOrderNetSuiteXML(position = 'right') {
+    const purchaseOrderFields = fieldOrderData.purchaseOrderFields || [];
+    
+    // Field mapping from form field IDs to NetSuite variables
+    const netSuiteFieldMapping = {
+      'po-title': '${record@title}',
+      'po-number': '${record.tranid}',
+      'po-date': '${record.trandate}',
+      'po-delivery-date': '${record.shipdate}',
+      'po-payment-terms': '${record.terms}',
+      'po-due-date': '${record.duedate}',
+      'po-reference': '${record.otherrefnum}'
+    };
+    
+    const fieldOrder = data.fieldOrder?.purchaseOrder || purchaseOrderFields.map(f => f.id);
+    
+    const orderedPOFields = fieldOrder.map(fieldId => {
+      const field = purchaseOrderFields.find(f => f.id === fieldId);
+      return field;
+    }).filter(Boolean);
+    
+    const fieldRows = orderedPOFields.map((field, index) => {
+      const isTitle = field.id === 'po-title';
+      
+      let netSuiteVariable = netSuiteFieldMapping[field.id];
+      
+      if (!netSuiteVariable) {
+        const cleanId = field.id.replace(/^po-/, '').replace(/-/g, '');
+        netSuiteVariable = `\${record.${cleanId}}`;
+      }
+      
+      if (isTitle) {
+        return `<tr><td class="header-po" style="text-align: right; font-size: 24pt;" data-field="${field.id}">${netSuiteVariable}</td></tr>`;
+      } else {
+        const needsLabel = !['${record.tranid}', '${record.trandate}'].includes(netSuiteVariable);
+        const displayText = needsLabel ? `${field.label}: ${netSuiteVariable}` : netSuiteVariable;
+        return `<tr><td style="text-align: right;" data-field="${field.id}">${displayText}</td></tr>`;
+      }
+    }).join('');
+    
+    const poTdPadding = position === 'right' ? 'padding-left: 24px;' : 'padding-right: 36px;';
+    return `
+      <td style="width: 35%; ${poTdPadding}" data-section="purchase-order">
+        <table>
+          ${fieldRows}
+        </table>
+      </td>
+    `;
+  }
+}
