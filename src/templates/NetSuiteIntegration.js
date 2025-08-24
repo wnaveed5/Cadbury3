@@ -142,6 +142,9 @@ ${body}
       commentsFields: data.commentsFields || [],
       contactFields: data.contactFields || [],
       
+      // Major sections ordering (sections 3,4,5 swapping)
+      majorSectionsOrder: data.majorSectionsOrder || ['vendor-shipto-group', 'shipping-section'],
+      
       // Section ordering (major layout changes)
       sectionOrder: data.sectionOrder || {},
       
@@ -489,17 +492,49 @@ ${bodySection}
     // Check if we have section order information
     const sectionOrder = data.sectionOrder || {};
     
+    // Debug: Log the data being received
+    console.log('🔍 NetSuite buildBodySection - Full data:', data);
+    console.log('🔍 NetSuite buildBodySection - majorSectionsOrder:', data.majorSectionsOrder);
+    console.log('🔍 NetSuite buildBodySection - sectionOrder:', sectionOrder);
+    
     const companyPOSection = this.buildCompanyPOSection(data, sectionOrder);
-    const vendorShipToSection = this.buildVendorShipToSection(data, sectionOrder);
-    const shippingDetailsSection = this.buildShippingDetailsSection(data);
     const lineItemsSection = this.buildLineItemsSection(data);
     const commentsTotalsSection = this.buildCommentsTotalsSection(data, sectionOrder);
     const contactSignatureSection = this.buildContactSignatureSection(data);
 
+    // Build vendor/shipto and shipping sections separately
+    const vendorShipToSection = this.buildVendorShipToSection(data, sectionOrder);
+    const shippingDetailsSection = this.buildShippingDetailsSection(data);
+    
+    // Use majorSectionsOrder for dynamic section arrangement (sections 3,4,5 swapping)
+    const majorSectionsOrder = data.majorSectionsOrder || ['vendor-shipto-group', 'shipping-section'];
+    
+    console.log('🔍 NetSuite buildBodySection - Using majorSectionsOrder:', majorSectionsOrder);
+    console.log('🔍 NetSuite buildBodySection - majorSectionsOrder[0]:', majorSectionsOrder[0]);
+    console.log('🔍 NetSuite buildBodySection - majorSectionsOrder[1]:', majorSectionsOrder[1]);
+    
+    // Build the sections in the correct order based on majorSectionsOrder
+    // Use the same logic as the regular template for consistent behavior
+    let vendorShipToAndShippingContent = '';
+    if (majorSectionsOrder[0] === 'vendor-shipto-group') {
+      // Default order: Vendor-ShipTo group on top, Shipping Details below
+      console.log('🔍 NetSuite buildBodySection - Using default order: Vendor-ShipTo group top, Shipping section bottom');
+      vendorShipToAndShippingContent = vendorShipToSection + shippingDetailsSection;
+    } else if (majorSectionsOrder[0] === 'shipping-section') {
+      // Swapped order: Shipping Details on top, Vendor-ShipTo group below
+      console.log('🔍 NetSuite buildBodySection - Using swapped order: Shipping section top, Vendor-ShipTo group bottom');
+      vendorShipToAndShippingContent = shippingDetailsSection + vendorShipToSection;
+    } else {
+      // Fallback to default if unexpected value
+      console.log('🔍 NetSuite buildBodySection - Unexpected majorSectionsOrder[0]:', majorSectionsOrder[0], '- using default');
+      vendorShipToAndShippingContent = vendorShipToSection + shippingDetailsSection;
+    }
+
+    console.log('🔍 NetSuite buildBodySection - Final vendorShipToAndShippingContent length:', vendorShipToAndShippingContent.length);
+
     return `<body padding="0.5in" size="Letter">
     ${companyPOSection}
-    ${vendorShipToSection}
-    ${shippingDetailsSection}
+    ${vendorShipToAndShippingContent}
     ${lineItemsSection}
     ${commentsTotalsSection}
     ${contactSignatureSection}

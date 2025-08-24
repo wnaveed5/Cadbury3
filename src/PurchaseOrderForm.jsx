@@ -203,7 +203,7 @@ function DraggableGroupHandle({ children, id, label }) {
   };
 
   return (
-    <div ref={setNodeRef} style={style}>
+    <div ref={setNodeRef} id={id} style={style}>
       {/* Group Drag Handle */}
       <div 
         {...attributes} 
@@ -998,6 +998,34 @@ function PurchaseOrderForm() {
       // Helpers for DOM reads
       const getText = (sel) => document.querySelector(sel)?.textContent?.trim() || '';
       
+      // Determine current visual order of major sections (sections 3,4,5 swapping) from DOM
+      const majorSectionsContainer = document.querySelector('.major-sections-container');
+      console.log('🔍 NetSuite DOM Debug - majorSectionsContainer:', majorSectionsContainer);
+      console.log('🔍 NetSuite DOM Debug - Current majorSectionsOrder state:', majorSectionsOrder);
+      
+      let visualMajorSectionsOrder = majorSectionsOrder; // fallback to state
+      if (majorSectionsContainer) {
+        const majorSectionElements = Array.from(majorSectionsContainer.querySelectorAll('[id]'));
+        console.log('🔍 NetSuite DOM Debug - majorSectionElements:', majorSectionElements.map(el => ({ id: el.id, tagName: el.tagName })));
+        console.log('🔍 NetSuite DOM Debug - All IDs found:', JSON.stringify(majorSectionElements.map(el => el.id)));
+        const visualOrder = majorSectionElements
+          .map(el => el.id)
+          .filter(id => id === 'vendor-shipto-group' || id === 'shipping-section');
+        console.log('🔍 NetSuite DOM Debug - visualOrder:', visualOrder);
+        if (visualOrder.length === 2) {
+          visualMajorSectionsOrder = visualOrder;
+          console.log('🔍 NetSuite DOM Debug - Using visual order:', visualMajorSectionsOrder);
+        } else {
+          console.log('🔍 NetSuite DOM Debug - Using fallback order:', visualMajorSectionsOrder);
+        }
+      } else {
+        console.log('🔍 NetSuite DOM Debug - No majorSectionsContainer found');
+      }
+      
+      // Additional debugging: Log the final order being used
+      console.log('🔍 NetSuite DOM Debug - Final visualMajorSectionsOrder:', visualMajorSectionsOrder);
+      console.log('🔍 NetSuite DOM Debug - This should match the current UI order');
+      
       // Build the data structure that NetSuite generator expects
       const netSuiteData = {
         companyFields: companyFields,
@@ -1007,6 +1035,8 @@ function PurchaseOrderForm() {
         totalsFields: totalsFields,
         commentsFields: commentsFields,
         contactFields: contactFields,
+        // Add major sections order for sections 3,4,5 swapping
+        majorSectionsOrder: visualMajorSectionsOrder,
         // Add section order information for dynamic XML generation
         sectionOrder: {
           sections1And2: sections1And2ForExport,
@@ -1031,6 +1061,11 @@ function PurchaseOrderForm() {
           'shipping-terms': getText(`.section-5 [data-field="shippingTerms"] .editable-field`) || ''
         }
       };
+      
+      // Debug: Log the exact data being sent to NetSuite template
+      console.log('🔍 NetSuite Debug - Full netSuiteData object:', netSuiteData);
+      console.log('🔍 NetSuite Debug - majorSectionsOrder being sent:', netSuiteData.majorSectionsOrder);
+      console.log('🔍 NetSuite Debug - This should reflect the current UI order');
       
       const netSuiteXML = generateNetSuiteTemplate(netSuiteData);
       
@@ -1872,8 +1907,8 @@ function PurchaseOrderForm() {
   // State for major sections order (vendor-shipto-group and shipping-section)
   const [majorSectionsOrder, setMajorSectionsOrder] = useState(['vendor-shipto-group', 'shipping-section']);
   
-  // State for vendor-ship-to and shipping-details sections order (simplified after removing section 7)
-  const [vendorShipToAndShippingDetailsOrder, setVendorShipToAndShippingDetailsOrder] = useState(['section5']);
+  // State for vendor-ship-to and shipping-details sections order (sections 3,4,5 can swap)
+  const [vendorShipToAndShippingDetailsOrder, setVendorShipToAndShippingDetailsOrder] = useState(['vendor-shipto-group', 'section5']);
   
   // CRITICAL: Add field order state management (same pattern as section order)
   // State for company field order (preserves drag-and-drop order independently of section position)
@@ -2541,7 +2576,15 @@ function PurchaseOrderForm() {
         if (oldIndex !== -1 && newIndex !== -1) {
           const newOrder = arrayMove(prevOrder, oldIndex, newIndex);
           
-
+          // Debug: Log the state change
+          console.log('🔄 Major Sections State Change:', {
+            from: prevOrder,
+            to: newOrder,
+            activeId: active.id,
+            overId: over.id,
+            oldIndex,
+            newIndex
+          });
           
           // Add to change history
           addToChangeHistory('major-sections-swap', 
@@ -2669,63 +2712,68 @@ function PurchaseOrderForm() {
             </div>
           </div>
 
-          {/* Sections 3 & 4 - Using the main DndContext for both palette drag and reordering */}
-          <div className="vendor-shipto-sections" style={{ marginTop: '30px' }}>
-            <SortableContext 
-              items={vendorShipToSectionOrder}
-              strategy={horizontalListSortingStrategy}
-            >
-              <div className="vendor-shipping-columns">
-                {vendorShipToSectionOrder.map((sectionId, sectionIndex) => (
-                  <div key={`${sectionId}-${sectionIndex}`} className="individual-section">
-                    {sectionId === 'section3' ? (
-                      <div key={`section3-${sectionIndex}`} className="section-3-wrapper">
-                        <Section3Vendor 
-                          vendorFields={vendorFields}
-                          sensors={sensors}
-                          onVendorDragEnd={handleVendorDragEnd}
-                          onAddVendorField={handleAddVendorField}
-                          onRemoveVendorField={handleRemoveVendorField}
-                          onLabelChange={handleVendorFieldLabelChange}
-                          onContentChange={handleContentChange}
-                          lastModified={Date.now()}
-                        />
-                      </div>
-                    ) : sectionId === 'section4' ? (
-                      <div key="section4" className="section-4-wrapper">
-                        <Section4ShipTo 
-                          shipToFields={shipToFields}
-                          sensors={sensors}
-                          onShipToDragEnd={handleShipToDragEnd}
-                          onAddShipToField={handleAddShipToField}
-                          onRemoveShipToField={handleRemoveShipToField}
-                          onLabelChange={handleShipToFieldLabelChange}
-                          onContentChange={handleContentChange}
-                          lastModified={Date.now()}
-                        />
-                      </div>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            </SortableContext>
-          </div>
-
-          {/* Major Sections Container with Drag and Drop - Only for shipping section now */}
-          <div className="major-sections-container">
+          {/* Combined container for sections 3,4,5 swapping */}
+          <div className="major-sections-container" style={{ marginTop: '30px' }}>
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
               onDragEnd={handleMajorSectionsDragEnd}
             >
               <SortableContext 
-                items={majorSectionsOrder.filter(group => group === 'shipping-section')}
+                items={majorSectionsOrder}
                 strategy={verticalListSortingStrategy}
               >
                 {majorSectionsOrder.map((sectionGroup, index) => {
-                  if (sectionGroup === 'shipping-section') {
+                  if (sectionGroup === 'vendor-shipto-group') {
                     return (
-                      <div key={`shipping-section-${index}`} style={{ marginTop: '30px' }}>
+                      <div key={`vendor-shipto-group-${index}`}>
+                        <DraggableGroupHandle id="vendor-shipto-group" label="Vendor & Ship-To">
+                          <div className="vendor-shipto-sections">
+                            <SortableContext 
+                              items={vendorShipToSectionOrder}
+                              strategy={horizontalListSortingStrategy}
+                            >
+                              <div className="vendor-shipping-columns">
+                                {vendorShipToSectionOrder.map((sectionId, sectionIndex) => (
+                                  <div key={`${sectionId}-${sectionIndex}`} className="individual-section">
+                                    {sectionId === 'section3' ? (
+                                      <div key={`section3-${sectionIndex}`} className="section-3-wrapper">
+                                        <Section3Vendor 
+                                          vendorFields={vendorFields}
+                                          sensors={sensors}
+                                          onVendorDragEnd={handleVendorDragEnd}
+                                          onAddVendorField={handleAddVendorField}
+                                          onRemoveVendorField={handleRemoveVendorField}
+                                          onLabelChange={handleVendorFieldLabelChange}
+                                          onContentChange={handleContentChange}
+                                          lastModified={Date.now()}
+                                        />
+                                      </div>
+                                    ) : sectionId === 'section4' ? (
+                                      <div key="section4" className="section-4-wrapper">
+                                        <Section4ShipTo 
+                                          shipToFields={shipToFields}
+                                          sensors={sensors}
+                                          onShipToDragEnd={handleShipToDragEnd}
+                                          onAddShipToField={handleAddShipToField}
+                                          onRemoveShipToField={handleRemoveShipToField}
+                                          onLabelChange={handleShipToFieldLabelChange}
+                                          onContentChange={handleContentChange}
+                                          lastModified={Date.now()}
+                                        />
+                                      </div>
+                                    ) : null}
+                                  </div>
+                                ))}
+                              </div>
+                            </SortableContext>
+                          </div>
+                        </DraggableGroupHandle>
+                      </div>
+                    );
+                  } else if (sectionGroup === 'shipping-section') {
+                    return (
+                      <div key={`shipping-section-${index}`}>
                         <DraggableGroupHandle id="shipping-section" label="Shipping">
                           <div className="section-5">
                             <Section5Shipping 
