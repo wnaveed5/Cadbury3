@@ -13,7 +13,9 @@ function Section2PurchaseOrder({
   onContentChange,
   lastModified,
   dragListeners,
-  dragAttributes
+  dragAttributes,
+  showDummyData = true,
+  getNetSuiteVariable
 }) {
   const [isPaletteOver, setIsPaletteOver] = useState(false);
   
@@ -96,6 +98,8 @@ function Section2PurchaseOrder({
                 onLabelChange={onLabelChange}
                 onContentChange={onContentChange}
                 section="purchaseOrder"
+                showDummyData={showDummyData}
+                getNetSuiteVariable={getNetSuiteVariable}
               />
             ))}
           </div>

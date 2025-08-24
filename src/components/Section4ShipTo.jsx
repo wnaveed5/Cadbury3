@@ -13,7 +13,9 @@ function Section4ShipTo({
   onRemoveShipToField,
   onLabelChange,
   onContentChange,
-  lastModified
+  lastModified,
+  showDummyData = true,
+  getNetSuiteVariable
 }) {
   const [isPaletteOver, setIsPaletteOver] = useState(false);
   
@@ -131,6 +133,8 @@ function Section4ShipTo({
                 onLabelChange={onLabelChange}
                 onContentChange={onContentChange}
                 section="ship-to"
+                showDummyData={showDummyData}
+                getNetSuiteVariable={getNetSuiteVariable}
               />
             ))}
           </div>

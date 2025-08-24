@@ -13,7 +13,9 @@ function Section3Vendor({
   onRemoveVendorField,
   onLabelChange,
   onContentChange,
-  lastModified
+  lastModified,
+  showDummyData = true,
+  getNetSuiteVariable
 }) {
   const [isPaletteOver, setIsPaletteOver] = useState(false);
   
@@ -131,6 +133,8 @@ function Section3Vendor({
                 onLabelChange={onLabelChange}
                 onContentChange={onContentChange}
                 section="vendor"
+                showDummyData={showDummyData}
+                getNetSuiteVariable={getNetSuiteVariable}
               />
             ))}
           </div>

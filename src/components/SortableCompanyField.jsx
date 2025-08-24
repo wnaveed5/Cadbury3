@@ -2,7 +2,7 @@ import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-function SortableCompanyField({ field, onRemove, onLabelChange, onContentChange, section }) {
+function SortableCompanyField({ field, onRemove, onLabelChange, onContentChange, section, showDummyData = true, getNetSuiteVariable }) {
   // Drag and drop functionality
   const {
     attributes,
@@ -77,13 +77,33 @@ function SortableCompanyField({ field, onRemove, onLabelChange, onContentChange,
           {field.label}
         </span>
         {!field.isTitle && (
-          <span 
-            id={field.id} 
-            className="editable-field" 
-            contentEditable="true" 
-            data-placeholder={field.placeholder}
-            dangerouslySetInnerHTML={{ __html: field.value || field.placeholder }}
-          />
+          showDummyData ? (
+            <span 
+              id={field.id} 
+              className="editable-field" 
+              contentEditable="true" 
+              data-placeholder={field.placeholder}
+              dangerouslySetInnerHTML={{ __html: field.value || field.placeholder }}
+            />
+          ) : (
+            <span 
+              className="netsuite-variable"
+              style={{
+                display: 'inline-block',
+                backgroundColor: '#f0f8ff',
+                color: '#0066cc',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontWeight: '600',
+                border: '1px solid #b3d9ff',
+                fontFamily: 'monospace',
+                fontStyle: 'italic'
+              }}
+            >
+              {getNetSuiteVariable ? getNetSuiteVariable(field.id, 'company') : `\${record.${field.id}}`}
+            </span>
+          )
         )}
       </div>
 

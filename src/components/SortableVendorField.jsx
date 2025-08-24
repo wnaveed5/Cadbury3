@@ -2,7 +2,7 @@ import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-function SortableVendorField({ field, onRemove, onLabelChange, onContentChange }) {
+function SortableVendorField({ field, onRemove, onLabelChange, onContentChange, showDummyData = true, getNetSuiteVariable }) {
   const {
     attributes,
     listeners,
@@ -80,15 +80,35 @@ function SortableVendorField({ field, onRemove, onLabelChange, onContentChange }
         >
           {field.label}
         </span>
-        <span 
-          id={field.id} 
-          className="editable-field" 
-          contentEditable="true" 
-          data-placeholder={field.placeholder}
-          onBlur={handleContentChange}
-          suppressContentEditableWarning={true}
-          dangerouslySetInnerHTML={{ __html: field.value || '' }}
-        />
+        {showDummyData ? (
+          <span 
+            id={field.id} 
+            className="editable-field" 
+            contentEditable="true" 
+            data-placeholder={field.placeholder}
+            onBlur={handleContentChange}
+            suppressContentEditableWarning={true}
+            dangerouslySetInnerHTML={{ __html: field.value || '' }}
+          />
+        ) : (
+          <span 
+            className="netsuite-variable"
+            style={{
+              display: 'inline-block',
+              backgroundColor: '#f0f8ff',
+              color: '#0066cc',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontSize: '11px',
+              fontWeight: '600',
+              border: '1px solid #b3d9ff',
+              fontFamily: 'monospace',
+              fontStyle: 'italic'
+            }}
+          >
+            {getNetSuiteVariable ? getNetSuiteVariable(field.id, 'vendor') : `\${record.${field.id}}`}
+          </span>
+        )}
       </div>
     </div>
   );

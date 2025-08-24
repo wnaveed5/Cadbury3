@@ -278,6 +278,77 @@ function PurchaseOrderForm() {
     setSidebarVisible(!sidebarVisible);
   };
 
+  // State for showing dummy data vs field pills
+  const [showDummyData, setShowDummyData] = useState(true);
+
+  // Toggle between dummy data and field pills
+  const toggleDataMode = () => {
+    setShowDummyData(!showDummyData);
+  };
+
+  // Helper function to get NetSuite variable for a field
+  const getNetSuiteVariable = (fieldId, section) => {
+    const netSuiteMapping = {
+      // Company fields
+      'company-name': '${record.companyname}',
+      'company-address': '${record.companyaddress}',
+      'company-city-state': '${record.companycitystate}',
+      'company-phone': '${record.companyphone}',
+      'company-fax': '${record.companyfax}',
+      'company-website': '${record.companywebsite}',
+      
+      // Purchase Order fields
+      'po-title': '${record.title}',
+      'po-date': '${record.trandate}',
+      'po-number': '${record.tranid}',
+      'po-delivery-date': '${record.shipdate}',
+      'po-payment-terms': '${record.terms}',
+      'po-due-date': '${record.duedate}',
+      'po-reference': '${record.otherrefnum}',
+      'po-requisitioner': '${record.memo}',
+      
+      // Vendor fields
+      'vendor-company': '${record.billaddresslist}',
+      'vendor-contact': '${record.billcontact}',
+      'vendor-address': '${record.billaddress}',
+      'vendor-city-state': '${record.billcitystate}',
+      'vendor-phone': '${record.billphone}',
+      'vendor-fax': '${record.billfax}',
+      
+      // Ship To fields
+      'ship-to-name': '${record.shipcontact}',
+      'ship-to-company': '${record.shipaddresslist}',
+      'ship-to-address': '${record.shipaddress}',
+      'ship-to-city-state': '${record.shipcitystate}',
+      'ship-to-phone': '${record.shipphone}',
+      'ship-to-fax': '${record.shipfax}',
+      
+      // Shipping fields
+      'ship-via': '${record.shipmethod}',
+      'fob': '${record.fob}',
+      'shipping-terms': '${record.shippingterms}',
+      
+      // Totals fields
+      'subtotal': '${record.subtotal}',
+      'tax': '${record.taxtotal}',
+      'shipping': '${record.shippingcost}',
+      'other': '${record.othercost}',
+      'total': '${record.total}',
+      
+      // Comments and Contact
+      'comments': '${record.memo}',
+      'contact': '${record.memo}'
+    };
+    
+    // For custom fields, generate a generic NetSuite variable
+    if (fieldId.startsWith('custom-') || fieldId.includes('field-')) {
+      const cleanId = fieldId.replace(/^(custom-|.*field-)/, '').replace(/[^a-zA-Z0-9]/g, '');
+      return `\${record.${cleanId}}`;
+    }
+    
+    return netSuiteMapping[fieldId] || `\${record.${fieldId}}`;
+  };
+
   // Helper: slugify and ensure unique id for new fields
   const generateUniqueFieldId = (baseLabel, existingIds) => {
     const slugBase = String(baseLabel)
@@ -2644,8 +2715,65 @@ function PurchaseOrderForm() {
           alignItems: 'center', 
           width: '100%',
           textAlign: 'center',
-          marginBottom: '20px'
+          marginBottom: '20px',
+          position: 'relative'
         }}>
+          {/* Toggle Switch - Upper Right */}
+          <div style={{
+            position: 'absolute',
+            top: '10px',
+            right: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            backgroundColor: 'white',
+            padding: '8px 12px',
+            borderRadius: '20px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            border: '1px solid #e0e0e0'
+          }}>
+            <span style={{ 
+              fontSize: '12px', 
+              color: showDummyData ? '#666' : '#333',
+              fontWeight: showDummyData ? 'normal' : 'bold'
+            }}>
+              Dummy Data
+            </span>
+            <button
+              onClick={toggleDataMode}
+              style={{
+                width: '40px',
+                height: '20px',
+                borderRadius: '10px',
+                border: 'none',
+                backgroundColor: showDummyData ? '#ccc' : '#4CAF50',
+                cursor: 'pointer',
+                position: 'relative',
+                transition: 'background-color 0.3s ease'
+              }}
+              title={showDummyData ? 'Switch to Field Pills' : 'Switch to Dummy Data'}
+            >
+              <div style={{
+                width: '16px',
+                height: '16px',
+                borderRadius: '50%',
+                backgroundColor: 'white',
+                position: 'absolute',
+                top: '2px',
+                left: showDummyData ? '2px' : '22px',
+                transition: 'left 0.3s ease',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+              }} />
+            </button>
+            <span style={{ 
+              fontSize: '12px', 
+              color: showDummyData ? '#333' : '#666',
+              fontWeight: showDummyData ? 'bold' : 'normal'
+            }}>
+              Field Pills
+            </span>
+          </div>
+          
           <div style={{ marginBottom: '20px' }}>
             <h1>Purchase Order Management System</h1>
             <p>Create, edit, and manage purchase orders with ease</p>
@@ -2687,6 +2815,8 @@ function PurchaseOrderForm() {
                           onLabelChange={handleCompanyFieldLabelChange}
                           onContentChange={handleContentChange}
                           lastModified={lastModified}
+                          showDummyData={showDummyData}
+                          getNetSuiteVariable={getNetSuiteVariable}
                         />
                       </DraggableSectionWrapper>
                     );
@@ -2702,6 +2832,8 @@ function PurchaseOrderForm() {
                           onLabelChange={handlePurchaseOrderFieldLabelChange}
                           onContentChange={handleContentChange}
                           lastModified={poLastModified}
+                          showDummyData={showDummyData}
+                          getNetSuiteVariable={getNetSuiteVariable}
                         />
                       </DraggableSectionWrapper>
                     );
@@ -2747,6 +2879,8 @@ function PurchaseOrderForm() {
                                           onLabelChange={handleVendorFieldLabelChange}
                                           onContentChange={handleContentChange}
                                           lastModified={Date.now()}
+                                          showDummyData={showDummyData}
+                                          getNetSuiteVariable={getNetSuiteVariable}
                                         />
                                       </div>
                                     ) : sectionId === 'section4' ? (
@@ -2760,6 +2894,8 @@ function PurchaseOrderForm() {
                                           onLabelChange={handleShipToFieldLabelChange}
                                           onContentChange={handleContentChange}
                                           lastModified={Date.now()}
+                                          showDummyData={showDummyData}
+                                          getNetSuiteVariable={getNetSuiteVariable}
                                         />
                                       </div>
                                     ) : null}
@@ -2779,6 +2915,7 @@ function PurchaseOrderForm() {
                             <Section5Shipping 
                               shippingColumnOrder={shippingColumnOrder}
                               onShippingColumnDragEnd={handleShippingColumnDragEnd}
+                              showDummyData={showDummyData}
                             />
                           </div>
                         </DraggableGroupHandle>
@@ -2923,6 +3060,8 @@ function PurchaseOrderForm() {
                               onLabelChange={handleCommentsFieldLabelChange}
                               onValueChange={handleCommentsFieldValueChange}
                               isMainField={field.id === 'comments-main'}
+                              showDummyData={showDummyData}
+                              getNetSuiteVariable={getNetSuiteVariable}
                             />
                           ))}
                         </SortableContext>
@@ -2965,6 +3104,8 @@ function PurchaseOrderForm() {
                               onRemove={handleRemoveTotalsField}
                               onLabelChange={handleTotalsFieldLabelChange}
                               onValueChange={handleTotalsFieldValueChange}
+                              showDummyData={showDummyData}
+                              getNetSuiteVariable={getNetSuiteVariable}
                             />
                           ))}
                         </SortableContext>
@@ -3012,6 +3153,8 @@ function PurchaseOrderForm() {
                       onLabelChange={handleContactFieldLabelChange}
                       onValueChange={handleContactFieldValueChange}
                       isMainField={field.id === 'contact-main'}
+                      showDummyData={showDummyData}
+                      getNetSuiteVariable={getNetSuiteVariable}
                     />
                   ))}
                 </SortableContext>

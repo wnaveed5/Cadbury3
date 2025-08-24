@@ -13,7 +13,9 @@ function Section1CompanyInfo({
   onContentChange,
   lastModified,
   dragListeners,
-  dragAttributes
+  dragAttributes,
+  showDummyData = true,
+  getNetSuiteVariable
 }) {
   const [isPaletteOver, setIsPaletteOver] = useState(false);
   
@@ -96,6 +98,8 @@ function Section1CompanyInfo({
                 onLabelChange={onLabelChange}
                 onContentChange={onContentChange}
                 section="company"
+                showDummyData={showDummyData}
+                getNetSuiteVariable={getNetSuiteVariable}
               />
             ))}
           </div>

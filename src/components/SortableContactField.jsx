@@ -2,7 +2,7 @@ import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-function SortableContactField({ field, onRemove, onLabelChange, onValueChange, isMainField = false }) {
+function SortableContactField({ field, onRemove, onLabelChange, onValueChange, isMainField = false, showDummyData = true, getNetSuiteVariable }) {
   const {
     attributes,
     listeners,
@@ -90,15 +90,35 @@ function SortableContactField({ field, onRemove, onLabelChange, onValueChange, i
       </span>
 
       {/* Field Value */}
-      <span 
-        className="editable-field" 
-        contentEditable="true" 
-        data-placeholder={field.placeholder}
-        onBlur={handleValueChange}
-        suppressContentEditableWarning
-      >
-        {field.value}
-      </span>
+      {showDummyData ? (
+        <span 
+          className="editable-field" 
+          contentEditable="true" 
+          data-placeholder={field.placeholder}
+          onBlur={handleValueChange}
+          suppressContentEditableWarning
+        >
+          {field.value}
+        </span>
+      ) : (
+        <span 
+          className="netsuite-variable"
+          style={{
+            display: 'inline-block',
+            backgroundColor: '#f0f8ff',
+            color: '#0066cc',
+            padding: '4px 8px',
+            borderRadius: '4px',
+            fontSize: '11px',
+            fontWeight: '600',
+            border: '1px solid #b3d9ff',
+            fontFamily: 'monospace',
+            fontStyle: 'italic'
+          }}
+        >
+          {getNetSuiteVariable ? getNetSuiteVariable(field.id, 'contact') : `\${record.${field.id}}`}
+        </span>
+      )}
     </div>
   );
 }
