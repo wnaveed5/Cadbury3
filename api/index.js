@@ -1,3 +1,10 @@
+// Load environment variables from .env file (optional)
+try {
+  require('dotenv').config();
+} catch (error) {
+  console.log('No .env file found, using environment variables');
+}
+
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -7,7 +14,8 @@ const app = express();
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // AI endpoint for field suggestions (legacy)
 app.post('/api/ai/fill', async (req, res) => {
@@ -208,6 +216,69 @@ Return ONLY a single JSON object with these exact keys:
   }
 });
 
+// Vision API endpoint for OCR
+app.post('/api/vision', async (req, res) => {
+  try {
+    const { image, prompt } = req.body;
+    
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({ error: 'OpenAI API key not configured on server' });
+    }
+
+    if (!image) {
+      return res.status(400).json({ error: 'Image data is required' });
+    }
+
+    // Call OpenAI Vision API
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: prompt || 'Extract all visible text from this image. Return only the raw text content.'
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: `data:image/png;base64,${image}`
+                }
+              }
+            ]
+          }
+        ],
+        max_tokens: 1000,
+        temperature: 0.1
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      return res.status(response.status).json({ error });
+    }
+
+    const data = await response.json();
+    const extractedText = data.choices[0].message.content;
+    
+    return res.status(200).json({ 
+      text: extractedText,
+      success: true 
+    });
+
+  } catch (error) {
+    console.error('Vision API error:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 // AI endpoint for analyze (matches frontend expectations)
 app.post('/api/analyze', async (req, res) => {
   try {
@@ -256,7 +327,7 @@ app.get('/api/health', (req, res) => {
 const buildPath = path.join(__dirname, '../build');
 
 if (fs.existsSync(buildPath)) {
-  // Serve static files
+  // Serve static files from React build
   app.use(express.static(buildPath));
   
   // Catch-all handler for React routing - must be last
@@ -274,11 +345,12 @@ module.exports = app;
 
 // Start server if running locally
 if (require.main === module) {
-  const PORT = process.env.PORT || 3001;
+  const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🚀 Single server running on port ${PORT}`);
     console.log(`📡 AI fill endpoint: http://localhost:${PORT}/api/ai/fill`);
     console.log(`🔍 AI analyze endpoint: http://localhost:${PORT}/api/analyze`);
     console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
+    console.log(`🌐 Frontend: http://localhost:${PORT}`);
   });
 }

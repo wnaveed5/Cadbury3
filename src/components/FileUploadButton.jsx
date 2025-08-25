@@ -1,61 +1,119 @@
 import React, { useState } from 'react';
-import { useAIProvider } from '../hooks/useAIProvider';
-import Tesseract from 'tesseract.js';
+import { analyzeFile } from '../hooks/useAIProvider';
 
-function FileUploadButton({ onAnalysisComplete }) {
+const FileUploadButton = ({ onAnalysisComplete }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
-  const { analyzeFile } = useAIProvider();
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
-    // Validate file type - accept both PDF and PNG
-    const allowedTypes = ['application/pdf', 'image/png'];
-    if (!allowedTypes.includes(file.type)) {
-      setUploadStatus('❌ Please select a PDF or PNG file');
-      return;
-    }
-
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      setUploadStatus('❌ File size must be less than 10MB');
-      return;
-    }
-
     setIsUploading(true);
-    setUploadStatus('📤 Analyzing file...');
+    setUploadStatus('📄 Starting file analysis...');
 
     try {
       let fileContent = '';
-      
+
       if (file.type === 'application/pdf') {
-        // For PDF, we'll extract text content
-        setUploadStatus('📄 Extracting PDF content...');
-        // For now, use basic info since PDF text extraction requires additional libraries
-        fileContent = `[PDF File: ${file.name}, Size: ${file.size} bytes] - Note: PDF text extraction not yet implemented`;
-      } else if (file.type === 'image/png') {
-        // For PNG, use OCR to extract text content
-        setUploadStatus('🖼️ Extracting text from PNG image...');
+        // PDF: Try text extraction first, OCR only if needed
+        setUploadStatus('📄 Extracting PDF text...');
         
         try {
-          const result = await Tesseract.recognize(file, 'eng', {
-            logger: m => {
-              if (m.status === 'recognizing text') {
-                setUploadStatus(`🖼️ Extracting text... ${Math.round(m.progress * 100)}%`);
-              }
-            }
+          // Use pdf.js for proper PDF text extraction
+          const pdfjsLib = window['pdfjs-dist/build/pdf'];
+          if (!pdfjsLib) {
+            throw new Error('PDF.js library not loaded');
+          }
+          
+          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+          
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          
+          let fullText = '';
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items.map(item => item.str).join(' ');
+            fullText += pageText + '\n';
+          }
+          
+          fileContent = fullText.trim();
+          console.log('📄 Extracted PDF text length:', fileContent.length);
+          console.log('📄 First 200 chars:', fileContent.substring(0, 200));
+          setUploadStatus('✅ PDF text extraction complete!');
+        } catch (pdfError) {
+          console.error('PDF extraction failed:', pdfError);
+          fileContent = `[PDF File: ${file.name}, Size: ${file.size} bytes, extraction failed: ${pdfError.message}]`;
+          setUploadStatus('⚠️ PDF extraction failed, using basic analysis');
+        }
+      } else if (file.type === 'image/png' || file.type === 'image/jpeg') {
+        // Image: Use Vision API for OCR
+        setUploadStatus('🖼️ Using Vision API for text extraction...');
+        
+        try {
+          // Convert file to base64 for Vision API
+          const base64 = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const base64String = reader.result.split(',')[1];
+              resolve(base64String);
+            };
+            reader.readAsDataURL(file);
           });
           
-          fileContent = result.data.text;
-          setUploadStatus('✅ Text extraction complete!');
-        } catch (ocrError) {
-          console.error('OCR failed:', ocrError);
-          // Fallback to basic file info if OCR fails
-          fileContent = `[PNG Image: ${file.name}, Size: ${file.size} bytes, OCR failed]`;
-          setUploadStatus('⚠️ OCR failed, using basic analysis');
+          // Use OpenAI Chat Completions API with vision for OCR
+          const visionResponse = await fetch('/api/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: 'gpt-4o-mini',
+              messages: [
+                {
+                  role: 'user',
+                  content: [
+                    {
+                      type: 'text',
+                      text: 'Extract ALL text from this purchase order image, starting from the VERY TOP LEFT corner (company name, logo, header section) and work your way down to the bottom. CRITICAL: Do not skip any text at the top of the document. Include the company header section, company name, address, phone, fax, website - everything visible from the top down. Then continue with purchase order details, vendor, ship-to, line items, totals, and comments. IMPORTANT: Return the COMPLETE text content - do not truncate or omit any sections. Include every word, number, and symbol you can see. Return ONLY the extracted text, no analysis or formatting.'
+                    },
+                    {
+                      type: 'image_url',
+                      image_url: {
+                        url: `data:image/png;base64,${base64}`,
+                        detail: 'high'
+                      }
+                    }
+                  ]
+                }
+              ],
+              max_tokens: 4000
+            })
+          });
+          
+          if (!visionResponse.ok) {
+            throw new Error('Vision API failed');
+          }
+          
+          const visionData = await visionResponse.json();
+          fileContent = visionData.choices[0].message.content || '';
+          
+          // Clean up the extracted text
+          fileContent = fileContent
+            .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+            .replace(/\n\s*\n/g, '\n') // Remove empty lines
+            .trim();
+          
+          setUploadStatus('✅ Vision API text extraction complete!');
+        } catch (visionError) {
+          console.error('Vision API failed:', visionError);
+          // Fallback to basic file info if Vision API fails
+          fileContent = `[Image: ${file.name}, Size: ${file.size} bytes, Vision API failed]`;
+          setUploadStatus('⚠️ Vision API failed, using basic analysis');
         }
+      } else {
+        // Unsupported file type
+        throw new Error('Unsupported file type. Please upload PDF or image files.');
       }
 
       // Use the AI provider to analyze the file
@@ -119,7 +177,7 @@ function FileUploadButton({ onAnalysisComplete }) {
       <input
         id="pdf-upload"
         type="file"
-        accept=".pdf,.png"
+        accept=".pdf,.png,.jpg,.jpeg"
         onChange={handleFileUpload}
         disabled={isUploading}
         style={{ display: 'none' }}
@@ -140,6 +198,6 @@ function FileUploadButton({ onAnalysisComplete }) {
       )}
     </div>
   );
-}
+};
 
 export default FileUploadButton;

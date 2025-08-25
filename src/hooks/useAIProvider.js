@@ -81,9 +81,7 @@ Return ONLY a single JSON object with these exact keys:
       ];
 
       // Call API - use Vercel function in production, local server in development
-      const apiUrl = process.env.NODE_ENV === 'production' 
-        ? '/api/analyze' 
-        : 'http://localhost:3001/api/analyze';
+      const apiUrl = '/api/analyze';
       
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -203,7 +201,211 @@ Return ONLY a single JSON object with these exact keys:
     try {
       // No need for API key - handled by serverless function
 
-      const analysisPrompt = `Analyze this purchase order document and extract ALL information you can find.
+      const analysisPrompt = `PHASE 1: Parse and label the document data
+
+Document Content:
+${fileContent}
+
+INSTRUCTIONS FOR PHASE 1:
+1. First, extract ALL information from the document and organize it into label-value pairs
+2. Look for every piece of data: company info, purchase order details, vendor info, shipping details, line items, totals, comments
+3. For each piece of data, identify what it is (the label) and what the actual value is
+4. Extract colors used in different sections if visible
+
+PHASE 2: Map to available form fields
+
+AVAILABLE FORM FIELDS:
+
+Company Section:
+- company-name: Company Name
+- company-address: Street Address
+- company-city-state: City, ST ZIP
+- company-phone: Phone
+- company-fax: Fax
+- company-website: Website
+
+Purchase Order Section:
+- po-title: Purchase Order (title)
+- po-date: DATE (look for dates like 16-07-2024, 07/16/2024, etc.)
+- po-number: PO # (look for PO numbers, might be in brackets like [123456])
+
+Vendor Section:
+- vendor-company: Vendor Company Name
+- vendor-contact: Contact Person
+- vendor-address: Vendor Street Address
+- vendor-city-state: Vendor City, ST ZIP
+- vendor-phone: Vendor Phone
+- vendor-fax: Vendor Fax
+
+Ship To Section:
+- ship-to-name: Ship To Name/Contact
+- ship-to-company: Ship To Company
+- ship-to-address: Ship To Address
+- ship-to-city-state: Ship To City, ST ZIP
+- ship-to-phone: Ship To Phone
+
+Shipping Info:
+- requisitioner: Requisitioner
+- ship-via: Ship Via
+- fob: F.O.B.
+- shipping-terms: Shipping Terms
+
+Line Items (extract all items you find):
+- For each item, extract: itemNumber, description, qty, rate/unitPrice, amount/total
+
+Totals:
+- subtotal: Subtotal amount
+- tax: Tax amount
+- shipping: Shipping amount
+- other: Other charges
+- total: Total amount
+
+Comments:
+- comments: Any comments or special instructions
+
+INSTRUCTIONS:
+1. Extract EVERY piece of data you can find from the document
+2. Match data to the CLOSEST appropriate field ID from the list above
+3. Use fuzzy matching - if something looks like a company name at the top, it's probably company-name
+4. If you see "GimBooks" anywhere, that's likely the company name
+5. Dates can be in various formats (MM/DD/YYYY, DD-MM-YYYY, etc.)
+6. PO numbers might be in brackets [123456] - extract just the number
+7. For line items, extract ALL items you find (Product XYZ, Product ABC, etc.)
+8. Extract all monetary values with or without $ signs
+9. If a field appears empty or has placeholder text like [Company Name], leave it empty
+
+Return a JSON object with this structure:
+{
+  "colors": {
+    "section1": "color found or 'default'",
+    "section2": "color found or 'default'",
+    "section3": "color found or 'default'",
+    "section4": "color found or 'default'"
+  },
+  "fields": {
+    "company": [
+      {"id": "company-name", "label": "Company Name:", "value": "extracted value or empty"},
+      {"id": "company-address", "label": "Street Address:", "value": "extracted value or empty"},
+      {"id": "company-city-state", "label": "City, ST ZIP:", "value": "extracted value or empty"},
+      {"id": "company-phone", "label": "Phone:", "value": "extracted value or empty"},
+      {"id": "company-fax", "label": "Fax:", "value": "extracted value or empty"},
+      {"id": "company-website", "label": "Website:", "value": "extracted value or empty"}
+    ],
+    "purchaseOrder": [
+      {"id": "po-title", "label": "Purchase Order", "value": "PURCHASE ORDER or similar"},
+      {"id": "po-date", "label": "DATE:", "value": "extracted date"},
+      {"id": "po-number", "label": "PO #:", "value": "extracted PO number"}
+    ],
+    "vendor": [
+      {"id": "vendor-company", "label": "Company:", "value": "extracted or empty"},
+      {"id": "vendor-contact", "label": "Contact:", "value": "extracted or empty"},
+      {"id": "vendor-address", "label": "Address:", "value": "extracted or empty"},
+      {"id": "vendor-city-state", "label": "City/State:", "value": "extracted or empty"},
+      {"id": "vendor-phone", "label": "Phone:", "value": "extracted or empty"}
+    ],
+    "shipTo": [
+      {"id": "ship-to-name", "label": "Name:", "value": "extracted or empty"},
+      {"id": "ship-to-company", "label": "Company:", "value": "extracted or empty"},
+      {"id": "ship-to-address", "label": "Address:", "value": "extracted or empty"},
+      {"id": "ship-to-city-state", "label": "City/State:", "value": "extracted or empty"},
+      {"id": "ship-to-phone", "label": "Phone:", "value": "extracted or empty"}
+    ],
+    "shipping": [
+      {"id": "requisitioner", "label": "Requisitioner:", "value": "extracted or empty"},
+      {"id": "ship-via", "label": "Ship Via:", "value": "extracted or empty"},
+      {"id": "fob", "label": "F.O.B.:", "value": "extracted or empty"},
+      {"id": "shipping-terms", "label": "Shipping Terms:", "value": "extracted or empty"}
+    ],
+    "items": [
+      {"id": "item1", "itemNumber": "extract", "description": "extract", "qty": "extract", "unitPrice": "extract", "total": "extract"}
+    ],
+    "totals": [
+      {"id": "subtotal", "label": "SUBTOTAL", "value": "extract"},
+      {"id": "tax", "label": "TAX", "value": "extract"},
+      {"id": "shipping", "label": "SHIPPING", "value": "extract"},
+      {"id": "other", "label": "OTHER", "value": "extract"},
+      {"id": "total", "label": "TOTAL", "value": "extract"}
+    ],
+    "comments": [
+      {"id": "comments", "label": "Comments:", "value": "extract any comments"}
+    ]
+  }
+}
+
+REMEMBER: Extract EVERYTHING you can find and match it to the most appropriate field!
+
+Return ONLY valid JSON, no additional text.`;
+
+      // Call API - use Vercel function in production, local server in development
+      const apiUrl = '/api/analyze';
+      
+      console.log('📡 Making API call to:', apiUrl);
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are an expert at analyzing purchase order documents. Extract field structures and colors accurately. CRITICAL: Extract ACTUAL VALUES, not field labels. If you see "Company Name:" as a label, extract "GimBooks" (the actual company name). If you see "Phone:" as a label, extract "(000) 000-0000" (the actual phone number). Field labels are NOT the values.'
+            },
+            {
+              role: 'user',
+              content: analysisPrompt
+            }
+          ],
+          temperature: 0.1,
+          response_format: { type: 'json_object' },
+          max_tokens: 2000
+        })
+      });
+
+      console.log('📡 API Response status:', response.status);
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('❌ OpenAI API error:', errorData);
+        throw new Error(`OpenAI API call failed: ${JSON.stringify(errorData)}`);
+      }
+
+      const data = await response.json();
+      const content = data.choices[0]?.message?.content;
+      
+      if (!content) {
+        throw new Error('No content received from OpenAI');
+      }
+
+      console.log('🔍 Raw GPT response content:', content);
+
+      // Parse the JSON response
+      let parsedResult;
+      try {
+        parsedResult = JSON.parse(content);
+        console.log('🔍 Parsed GPT response:', parsedResult);
+      } catch (parseError) {
+        console.error('Failed to parse GPT response:', parseError);
+        throw new Error('Failed to parse analysis result');
+      }
+
+      return parsedResult;
+    } catch (error) {
+      console.error('File analysis failed:', error);
+      throw error;
+    }
+  }
+
+  return { getFieldSuggestions, analyzeFile };
+}
+
+// Export analyzeFile as a standalone function for direct import
+export async function analyzeFile(fileContent) {
+  console.log('🔍 analyzeFile called with content:', fileContent?.substring(0, 100));
+  try {
+    // No need for API key - handled by serverless function
+
+    const analysisPrompt = `Analyze this purchase order document and extract ALL information you can find.
 
 Document Content:
 ${fileContent}
@@ -330,69 +532,68 @@ REMEMBER: Extract EVERYTHING you can find and match it to the most appropriate f
 
 Return ONLY valid JSON, no additional text.`;
 
-      // Call API - use Vercel function in production, local server in development
-      const apiUrl = process.env.NODE_ENV === 'production' 
-        ? '/api/analyze' 
-        : 'http://localhost:3001/api/analyze';
-      
-      console.log('📡 Making API call to:', apiUrl);
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are an expert at analyzing purchase order documents. Extract field structures and colors accurately.'
-            },
-            {
-              role: 'user',
-              content: analysisPrompt
-            }
-          ],
-          temperature: 0.1,
-          response_format: { type: 'json_object' },
-          max_tokens: 2000
-        })
-      });
+    // Call API - use Vercel function in production, local server in development
+    const apiUrl = '/api/analyze';
+    
+    console.log('📡 Making API call to:', apiUrl);
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an expert at analyzing purchase order documents. Extract field structures and colors accurately. CRITICAL: Extract ACTUAL VALUES, not field labels. If you see "Company Name:" as a label, extract "GimBooks" (the actual company name). If you see "Phone:" as a label, extract "(000) 000-0000" (the actual phone number). Field labels are NOT the values.'
+          },
+          {
+            role: 'user',
+            content: analysisPrompt
+          },
+          {
+            role: 'system',
+            content: 'COLOR DETECTION: When analyzing the document, look for any visual colors in each section. Detect whatever colors you actually see - could be green, blue, red, purple, orange, brown, gray, black, or any other colors. Use the actual color names you observe. Only use "default" if you cannot detect any specific color. Be accurate about what colors you actually see in the document.'
+          }
+        ],
+        temperature: 0.1,
+        response_format: { type: 'json_object' },
+        max_tokens: 2000
+      })
+    });
 
-      console.log('📡 API Response status:', response.status);
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('❌ OpenAI API error:', errorData);
-        throw new Error(`OpenAI API call failed: ${JSON.stringify(errorData)}`);
-      }
-
-      const data = await response.json();
-      const content = data.choices[0]?.message?.content;
-      
-      if (!content) {
-        throw new Error('No content received from OpenAI');
-      }
-
-      console.log('🔍 Raw GPT response content:', content);
-
-      // Parse the JSON response
-      let parsedResult;
-      try {
-        parsedResult = JSON.parse(content);
-        console.log('🔍 Parsed GPT response:', parsedResult);
-      } catch (parseError) {
-        console.error('Failed to parse GPT response:', parseError);
-        throw new Error('Failed to parse analysis result');
-      }
-
-      return parsedResult;
-    } catch (error) {
-      console.error('File analysis failed:', error);
-      throw error;
+    console.log('📡 API Response status:', response.status);
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('❌ OpenAI API error:', errorData);
+      throw new Error(`OpenAI API call failed: ${JSON.stringify(errorData)}`);
     }
-  }
 
-  return { getFieldSuggestions, analyzeFile };
+    const data = await response.json();
+    const content = data.choices[0]?.message?.content;
+    
+    if (!content) {
+      throw new Error('No content received from OpenAI');
+    }
+
+    console.log('🔍 Raw GPT response content:', content);
+
+    // Parse the JSON response
+    let parsedResult;
+    try {
+      parsedResult = JSON.parse(content);
+      console.log('🔍 Parsed GPT response:', parsedResult);
+    } catch (parseError) {
+      console.error('Failed to parse GPT response:', parseError);
+      throw new Error('Failed to parse analysis result');
+    }
+
+    return parsedResult;
+  } catch (error) {
+    console.error('File analysis failed:', error);
+    throw error;
+  }
 }
 
 

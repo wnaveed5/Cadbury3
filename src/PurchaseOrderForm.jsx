@@ -544,23 +544,34 @@ function PurchaseOrderForm() {
         // Update item table if detected
         if (analysisResult.fields.items && analysisResult.fields.items.length > 0) {
           console.log('📦 Processing items:', analysisResult.fields.items);
+          console.log('📦 Current lineItemData before update:', lineItemData);
           
           // Update line items with extracted data
           setLineItemData(prev => {
             const newData = { ...prev };
+            console.log('📦 Starting with existing data:', newData);
+            
             analysisResult.fields.items.forEach((item, index) => {
               const rowNumber = index + 1;
+              console.log(`📦 Processing item ${index + 1}:`, item);
+              console.log(`📦 Looking for row ${rowNumber}, exists:`, !!newData[rowNumber]);
+              
               if (newData[rowNumber]) {
-                newData[rowNumber] = {
-                  itemNumber: item.itemNumber || '',
+                const updatedRow = {
+                  itemNumber: item.itemNumber || item.id || '',
                   description: item.description || '',
                   qty: item.qty || '',
-                  rate: item.unitPrice || '',
-                  amount: item.total || ''
+                  rate: item.unitPrice || item.rate || '',
+                  amount: item.total || item.amount || ''
                 };
-                console.log(`📦 Updated line item ${rowNumber}:`, newData[rowNumber]);
+                newData[rowNumber] = updatedRow;
+                console.log(`📦 Updated line item ${rowNumber}:`, updatedRow);
+              } else {
+                console.log(`📦 Row ${rowNumber} doesn't exist, skipping`);
               }
             });
+            
+            console.log('📦 Final updated data:', newData);
             return newData;
           });
         }
@@ -568,9 +579,12 @@ function PurchaseOrderForm() {
         // Update totals if detected
         if (analysisResult.fields.totals && analysisResult.fields.totals.length > 0) {
           console.log('💰 Processing totals:', analysisResult.fields.totals);
+          console.log('💰 Current totalsFields before update:', totalsFields);
           
           setTotalsFields(prev => {
-            return prev.map(existingField => {
+            const updated = prev.map(existingField => {
+              console.log(`💰 Looking for match for "${existingField.label}" (id: ${existingField.id})`);
+              
               // Try to find a matching field from analysis
               const matchingField = analysisResult.fields.totals.find(f => 
                 f.id === existingField.id || 
@@ -579,11 +593,16 @@ function PurchaseOrderForm() {
               );
               
               if (matchingField && matchingField.value) {
-                console.log(`💰 Updating "${existingField.label}" with value: "${matchingField.value}"`);
+                console.log(`💰 Found match: "${existingField.label}" -> "${matchingField.value}"`);
                 return { ...existingField, value: matchingField.value };
+              } else {
+                console.log(`💰 No match found for "${existingField.label}"`);
               }
               return existingField;
             });
+            
+            console.log('💰 Updated totalsFields:', updated);
+            return updated;
           });
         }
         
