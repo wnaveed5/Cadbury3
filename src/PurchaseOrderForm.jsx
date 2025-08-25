@@ -60,6 +60,10 @@ function DraggableSectionWrapper({ children, id, sectionNumber, isSectionHandleD
         return 'section-1-company-info';
       case 2:
         return 'section-2-purchase-order';
+      case 3:
+        return 'section-3';
+      case 4:
+        return 'section-4';
       default:
         return `section-${sectionNum}`;
     }
@@ -137,7 +141,7 @@ function SortableLineItemColumnHeader({ children, id }) {
   };
 
   return (
-    <div 
+    <th 
       ref={setNodeRef} 
       style={style} 
       {...attributes} 
@@ -145,7 +149,7 @@ function SortableLineItemColumnHeader({ children, id }) {
       className={`sortable-column-header ${isDragging ? 'dragging' : ''}`}
     >
       {children}
-    </div>
+    </th>
   );
 }
 
@@ -379,11 +383,25 @@ function PurchaseOrderForm() {
       active: active?.id,
       over: over?.id,
       activeData: active?.data?.current,
-      overData: over?.data?.current
+      overData: over?.data?.current,
+      overType: over?.data?.current?.type,
+      overSectionNumber: over?.data?.current?.sectionNumber
+    });
+    
+    // Debug: Log all droppable zones
+    console.log('📍 Available droppable zones:', {
+      section1: document.querySelector('[data-droppable-id="section1"]'),
+      section2: document.querySelector('[data-droppable-id="section2"]'),
+      section3: document.querySelector('[data-droppable-id="section3"]'),
+      section4: document.querySelector('[data-droppable-id="section4"]')
     });
     
     if (!active?.data?.current || !over?.id) {
-      console.log('❌ Missing active data or over id');
+      console.log('❌ Missing active data or over id:', {
+        hasActiveData: !!active?.data?.current,
+        hasOverId: !!over?.id,
+        overObject: over
+      });
       return;
     }
     const data = active.data.current;
@@ -397,7 +415,8 @@ function PurchaseOrderForm() {
     console.log('🎯 Attempting to add field to section:', {
       baseLabel,
       targetSection: over.id,
-      availableSections: ['section1', 'section2', 'section3', 'section4']
+      availableSections: ['section1', 'section2', 'section3', 'section4'],
+      isValidTarget: ['section1', 'section2', 'section3', 'section4'].includes(over.id)
     });
     
     // Check if dropping on section elements
@@ -2030,8 +2049,13 @@ function PurchaseOrderForm() {
   // Function to handle drag start
   const handleDragStart = (event) => {
     const { active } = event;
-
     
+    console.log('🎯 Drag start detected:', {
+      activeId: active?.id,
+      activeData: active?.data?.current,
+      source: active?.data?.current?.source
+    });
+
     // Add dragging state to the dragged element
     if (active.id === 'section1' || active.id === 'section2') {
       const element = document.getElementById(active.id);
@@ -2511,9 +2535,20 @@ function PurchaseOrderForm() {
 
   // Unified drag end dispatcher for a single top-level DndContext
   const handleRootDragEnd = (event) => {
-    const { active } = event;
+    const { active, over } = event;
     const activeId = active?.id || '';
     const source = active?.data?.current?.source;
+
+    console.log('🔍 ROOT DRAG END:', {
+      activeId,
+      overId: over?.id,
+      source,
+      activeType: active?.data?.current?.type,
+      overType: over?.data?.current?.type,
+      isOverSection3: over?.id === 'section3',
+      isOverSection4: over?.id === 'section4',
+      isPaletteSource: source === 'palette'
+    });
 
     // Reset section handle dragging state
     setIsSectionHandleDragging(false);
@@ -2547,6 +2582,11 @@ function PurchaseOrderForm() {
     // Sections 1 & 2 swap
     if (activeId === 'section1' || activeId === 'section2') {
       handleSectionDragEnd(event);
+      return;
+    }
+    // Major sections swap (vendor-shipto-group and shipping-section)
+    if (activeId === 'vendor-shipto-group' || activeId === 'shipping-section') {
+      handleMajorSectionsDragEnd(event);
       return;
     }
     // Vendor-ShipTo + ShippingDetails container swap
@@ -2627,10 +2667,23 @@ function PurchaseOrderForm() {
   const handleMajorSectionsDragEnd = (event) => {
     const { active, over } = event;
     
-
+    console.log('🔄⚠️ MAJOR SECTIONS DRAG END (NESTED CONTEXT):', {
+      activeId: active?.id,
+      overId: over?.id,
+      activeSource: active?.data?.current?.source,
+      isPalette: active?.data?.current?.source === 'palette',
+      activeType: active?.data?.current?.type,
+      overType: over?.data?.current?.type,
+      WARNING: 'This nested DndContext might be intercepting palette drops!'
+    });
+    
+    // If this is a palette drag, pass it through - don't handle it here
+    if (active?.data?.current?.source === 'palette') {
+      console.log('⚠️ PALETTE DRAG INTERCEPTED BY MAJOR SECTIONS CONTEXT - PASSING THROUGH');
+      return;
+    }
     
     if (!active || !over || active.id === over.id) {
-
       return;
     }
 
@@ -2679,7 +2732,7 @@ function PurchaseOrderForm() {
     <div className={`purchase-order-container ${!sidebarVisible ? 'sidebar-hidden' : ''}`}>
       <DndContext 
         sensors={sensors} 
-        collisionDetection={rectIntersection}
+        collisionDetection={closestCenter}
         onDragCancel={() => {
     
         }}
@@ -2846,31 +2899,32 @@ function PurchaseOrderForm() {
 
           {/* Combined container for sections 3,4,5 swapping */}
           <div className="major-sections-container" style={{ marginTop: '30px' }}>
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleMajorSectionsDragEnd}
+            {/* REMOVED NESTED DndContext - it was blocking palette drops! */}
+            <SortableContext 
+              items={majorSectionsOrder}
+              strategy={verticalListSortingStrategy}
             >
-              <SortableContext 
-                items={majorSectionsOrder}
-                strategy={verticalListSortingStrategy}
-              >
-                {majorSectionsOrder.map((sectionGroup, index) => {
-                  if (sectionGroup === 'vendor-shipto-group') {
-                    return (
-                      <div key={`vendor-shipto-group-${index}`}>
-                        <DraggableGroupHandle id="vendor-shipto-group" label="Vendor & Ship-To">
-                          <div className="vendor-shipto-sections">
-                            <SortableContext 
-                              items={vendorShipToSectionOrder}
-                              strategy={horizontalListSortingStrategy}
-                            >
-                              <div className="vendor-shipping-columns">
-                                {vendorShipToSectionOrder.map((sectionId, sectionIndex) => (
-                                  <div key={`${sectionId}-${sectionIndex}`} className="individual-section">
-                                    {sectionId === 'section3' ? (
-                                      <div key={`section3-${sectionIndex}`} className="section-3-wrapper">
-                                        <Section3Vendor 
+              {majorSectionsOrder.map((sectionGroup, index) => {
+                if (sectionGroup === 'vendor-shipto-group') {
+                  return (
+                    <div key={`vendor-shipto-group-${index}`}>
+                      <DraggableGroupHandle id="vendor-shipto-group" label="Vendor & Ship-To">
+                        <div className="vendor-shipto-sections">
+                          <SortableContext 
+                            items={vendorShipToSectionOrder}
+                            strategy={horizontalListSortingStrategy}
+                          >
+                            <div className="vendor-shipping-columns">
+                              {vendorShipToSectionOrder.map((sectionId, sectionIndex) => (
+                                <DraggableSectionWrapper 
+                                  key={`${sectionId}-${sectionIndex}`} 
+                                  id={sectionId} 
+                                  sectionNumber={sectionId === 'section3' ? 3 : 4}
+                                  isSectionHandleDragging={isSectionHandleDragging}
+                                  showDragHandle={true}
+                                >
+                                  {sectionId === 'section3' ? (
+                                    <Section3Vendor 
                                           vendorFields={vendorFields}
                                           sensors={sensors}
                                           onVendorDragEnd={handleVendorDragEnd}
@@ -2882,9 +2936,7 @@ function PurchaseOrderForm() {
                                           showDummyData={showDummyData}
                                           getNetSuiteVariable={getNetSuiteVariable}
                                         />
-                                      </div>
                                     ) : sectionId === 'section4' ? (
-                                      <div key="section4" className="section-4-wrapper">
                                         <Section4ShipTo 
                                           shipToFields={shipToFields}
                                           sensors={sensors}
@@ -2897,9 +2949,8 @@ function PurchaseOrderForm() {
                                           showDummyData={showDummyData}
                                           getNetSuiteVariable={getNetSuiteVariable}
                                         />
-                                      </div>
                                     ) : null}
-                                  </div>
+                                </DraggableSectionWrapper>
                                 ))}
                               </div>
                             </SortableContext>
@@ -2925,7 +2976,7 @@ function PurchaseOrderForm() {
                   return null;
                 })}
               </SortableContext>
-            </DndContext>
+            {/* Removed closing DndContext tag */}
           </div>
 
 

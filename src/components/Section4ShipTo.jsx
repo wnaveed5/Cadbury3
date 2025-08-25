@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { DndContext, closestCenter, useDroppable } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import SortableShipToField from './SortableShipToField';
-
-
 
 function Section4ShipTo({ 
   shipToFields, 
@@ -14,13 +12,15 @@ function Section4ShipTo({
   onLabelChange,
   onContentChange,
   lastModified,
+  dragListeners,
+  dragAttributes,
   showDummyData = true,
   getNetSuiteVariable
 }) {
   const [isPaletteOver, setIsPaletteOver] = useState(false);
   
-  // Make the section droppable for palette fields AND sortable for reordering
-  const { isOver, setNodeRef: droppableRef } = useDroppable({
+  // Make the section droppable for palette fields
+  const { isOver, setNodeRef } = useDroppable({
     id: 'section4',
     data: {
       type: 'section',
@@ -28,28 +28,6 @@ function Section4ShipTo({
       accepts: 'palette-fields'
     }
   });
-
-  // Make the section sortable for reordering
-  const { 
-    attributes, 
-    listeners, 
-    setNodeRef: sortableRef, 
-    transform, 
-    transition, 
-    isDragging 
-  } = useSortable({
-    id: 'section4',
-    data: {
-      type: 'section',
-      sectionNumber: 4
-    }
-  });
-
-  // Combine refs - droppable for palette fields, sortable for reordering
-  const setNodeRef = (node) => {
-    droppableRef(node);
-    sortableRef(node);
-  };
 
   // Debug logging for droppable zone
   console.log('Section4ShipTo - Droppable zone created:', {
@@ -61,6 +39,11 @@ function Section4ShipTo({
   // Update palette over state
   React.useEffect(() => {
     setIsPaletteOver(isOver);
+    console.log('📍 Section4 droppable state:', {
+      isOver,
+      nodeRef: setNodeRef,
+      droppableId: 'section4'
+    });
   }, [isOver]);
 
   // Handler for adding new ship-to fields
@@ -89,62 +72,60 @@ function Section4ShipTo({
     }
   }, [shipToFields, lastModified]);
 
-  const style = {
-    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
-    transition,
-    opacity: isDragging ? 0.6 : 1,
-    zIndex: isDragging ? 1000 : 1
-  };
-
   return (
     <div 
       ref={setNodeRef}
-      style={style}
-      className={`section-4 ${isPaletteOver ? 'palette-over' : ''} ${isDragging ? 'dragging' : ''}`}
+      className={`section-4 ${isPaletteOver ? 'palette-over' : ''}`}
       data-palette-over={isPaletteOver}
-      data-dragging={isDragging}
-      {...attributes}
-      {...listeners}
+      style={{
+        minHeight: '300px',
+        padding: '20px',
+        border: isPaletteOver ? '3px dashed #4CAF50' : '2px solid #ddd',
+        borderRadius: '8px',
+        backgroundColor: isPaletteOver ? 'rgba(76, 175, 80, 0.05)' : 'transparent',
+        transition: 'all 0.2s ease',
+        position: 'relative'
+      }}
     >
       {/* Section Header */}
       <div className="section-header">
         SHIP TO
-        <span className="drag-indicator">
+        <span 
+          className="drag-indicator"
+          {...dragAttributes}
+          {...dragListeners}
+          style={{ cursor: 'grab' }}
+        >
           ::
         </span>
       </div>
       
       {/* Ship To Fields with Drag and Drop */}
-      <DndContext 
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={onShipToDragEnd}
+      <SortableContext 
+        items={shipToFields.map(field => field.id)}
+        strategy={verticalListSortingStrategy}
       >
-        <SortableContext 
-          items={shipToFields.map(field => field.id)}
-          strategy={verticalListSortingStrategy}
-        >
-          <div className="ship-to-fields-container">
-            {shipToFields.map(field => (
-              <SortableShipToField 
-                key={field.id} 
-                field={field} 
-                onRemove={onRemoveShipToField}
-                onLabelChange={onLabelChange}
-                onContentChange={onContentChange}
-                section="ship-to"
-                showDummyData={showDummyData}
-                getNetSuiteVariable={getNetSuiteVariable}
-              />
-            ))}
-          </div>
-        </SortableContext>
-      </DndContext>
+        <div className="ship-to-fields-container">
+          {shipToFields.map(field => (
+            <SortableShipToField 
+              key={field.id} 
+              field={field} 
+              onRemove={onRemoveShipToField}
+              onLabelChange={onLabelChange}
+              onContentChange={onContentChange}
+              section="ship-to"
+              showDummyData={showDummyData}
+              getNetSuiteVariable={getNetSuiteVariable}
+            />
+          ))}
+        </div>
+      </SortableContext>
       
       {/* Add Field Button */}
       <div className="add-field-section">
         <button 
-          className="add-field-btn" 
+          type="button" 
+          className="add-field-btn"
           onClick={handleAddField}
           title="Add new ship-to field"
         >
@@ -154,9 +135,23 @@ function Section4ShipTo({
       
       {/* Drop indicator when palette field is over */}
       {isPaletteOver && (
-        <div className="drop-indicator">
+        <div className="drop-indicator" style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          padding: '20px 40px',
+          backgroundColor: 'rgba(76, 175, 80, 0.9)',
+          color: 'white',
+          borderRadius: '8px',
+          fontSize: '18px',
+          fontWeight: 'bold',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+          zIndex: 1000,
+          pointerEvents: 'none'
+        }}>
           <div className="drop-message">
-            Drop field here
+            ✅ Drop field here to add to SHIP TO
           </div>
         </div>
       )}
