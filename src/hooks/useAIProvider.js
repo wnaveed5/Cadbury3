@@ -80,8 +80,12 @@ Return ONLY a single JSON object with these exact keys:
         }
       ];
 
-      // Call our backend server directly
-      const response = await fetch('http://localhost:3001/api/analyze', {
+      // Call API - use Vercel function in production, local server in development
+      const apiUrl = process.env.NODE_ENV === 'production' 
+        ? '/api/analyze' 
+        : 'http://localhost:3001/api/analyze';
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -235,6 +239,17 @@ Please return a JSON object with this structure:
       {"id": "ship-to-name", "label": "Name:", "value": ""},
       {"id": "ship-to-company", "label": "Company:", "value": ""},
       {"id": "ship-to-address", "label": "Address:", "value": ""}
+    ],
+    "items": [
+      {"id": "item1", "itemNumber": "23423423", "description": "Product XYZ", "qty": "15", "unitPrice": "150.00", "total": "2,250.00"},
+      {"id": "item2", "itemNumber": "45645645", "description": "Product ABC", "qty": "1", "unitPrice": "75.00", "total": "75.00"}
+    ],
+    "totals": [
+      {"id": "subtotal", "label": "SUBTOTAL", "value": "2,325.00"},
+      {"id": "tax", "label": "TAX", "value": ""},
+      {"id": "shipping", "label": "SHIPPING", "value": ""},
+      {"id": "other", "label": "OTHER", "value": ""},
+      {"id": "total", "label": "TOTAL", "value": "2,325.00"}
     ]
   }
 }
@@ -243,15 +258,21 @@ IMPORTANT: Extract the actual values you see in the document content. For exampl
 - If you see "GimBooks" as the company name, put that as the value
 - If you see "16-07-2024" as the date, put that as the value  
 - If you see "123456" as the PO number, put that as the value
+- If you see item data like "Product XYZ 15 150.00 2,250.00", extract it into the items array
+- If you see totals like "SUBTOTAL 2,325.00", extract them into the totals array
 - For fields that show placeholder text like [Company Name], leave the value empty
 
 Focus on extracting real data values, not just field structure.
 
 Return ONLY valid JSON, no additional text.`;
 
-      // Call our backend server directly
-      console.log('📡 Making API call to backend server...');
-      const response = await fetch('http://localhost:3001/api/analyze', {
+      // Call API - use Vercel function in production, local server in development
+      const apiUrl = process.env.NODE_ENV === 'production' 
+        ? '/api/analyze' 
+        : 'http://localhost:3001/api/analyze';
+      
+      console.log('📡 Making API call to:', apiUrl);
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
