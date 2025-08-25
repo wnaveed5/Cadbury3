@@ -4,11 +4,7 @@
 export function useAIProvider() {
   async function getFieldSuggestions(payload) {
     try {
-      const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
-      
-      if (!apiKey) {
-        throw new Error('OpenAI API key not configured. Please create a .env file with REACT_APP_OPENAI_API_KEY=your-api-key-here');
-      }
+      // No need for API key - handled by serverless function
 
       // Build the messages array
       const arr = (v) => Array.isArray(v) ? v : [];
@@ -84,11 +80,10 @@ Return ONLY a single JSON object with these exact keys:
         }
       ];
 
-      // Call OpenAI API directly from the browser
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      // Call our serverless function instead of OpenAI directly
+      const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -199,7 +194,108 @@ Return ONLY a single JSON object with these exact keys:
     }
   }
 
-  return { getFieldSuggestions };
+  async function analyzeFile(fileContent) {
+    console.log('🔍 analyzeFile called with content:', fileContent?.substring(0, 100));
+    try {
+      // No need for API key - handled by serverless function
+
+      const analysisPrompt = `Analyze this purchase order document and extract the following information:
+
+1. **Section Colors**: Identify the colors used for section headers/titles
+2. **Field Structure**: Identify all the fields present in each section
+
+Document Content:
+${fileContent}
+
+Please return a JSON object with this structure:
+{
+  "colors": {
+    "section1": "#hexcolor or color name",
+    "section2": "#hexcolor or color name",
+    "section3": "#hexcolor or color name",
+    "section4": "#hexcolor or color name"
+  },
+  "fields": {
+    "company": [
+      {"id": "company-name", "label": "Company Name:", "placeholder": "Enter company name", "value": ""}
+    ],
+    "purchaseOrder": [
+      {"id": "po-title", "label": "Purchase Order", "placeholder": "", "value": "Purchase Order", "isTitle": true}
+    ],
+    "vendor": [
+      {"id": "vendor-company", "label": "Company:", "placeholder": "Vendor name", "value": ""}
+    ],
+    "shipTo": [
+      {"id": "ship-to-name", "label": "Name:", "placeholder": "Contact name", "value": ""}
+    ]
+  }
+}
+
+Focus on identifying:
+- Company information fields
+- Purchase order details
+- Vendor information
+- Shipping/recipient details
+- Any custom fields that might be present
+
+Return ONLY valid JSON, no additional text.`;
+
+      // Call our serverless function instead of OpenAI directly
+      console.log('📡 Making API call via serverless function...');
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are an expert at analyzing purchase order documents. Extract field structures and colors accurately.'
+            },
+            {
+              role: 'user',
+              content: analysisPrompt
+            }
+          ],
+          temperature: 0.1,
+          response_format: { type: 'json_object' },
+          max_tokens: 2000
+        })
+      });
+
+      console.log('📡 API Response status:', response.status);
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('❌ OpenAI API error:', errorData);
+        throw new Error(`OpenAI API call failed: ${JSON.stringify(errorData)}`);
+      }
+
+      const data = await response.json();
+      const content = data.choices[0]?.message?.content;
+      
+      if (!content) {
+        throw new Error('No content received from OpenAI');
+      }
+
+      // Parse the JSON response
+      let parsedResult;
+      try {
+        parsedResult = JSON.parse(content);
+      } catch (parseError) {
+        console.error('Failed to parse GPT response:', parseError);
+        throw new Error('Failed to parse analysis result');
+      }
+
+      return parsedResult;
+    } catch (error) {
+      console.error('File analysis failed:', error);
+      throw error;
+    }
+  }
+
+  return { getFieldSuggestions, analyzeFile };
 }
 
 

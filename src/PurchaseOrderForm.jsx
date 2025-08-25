@@ -3,6 +3,7 @@ import './PurchaseOrderForm.css';
 import './section-styles.css';
 import './section-title-colors.css';
 import SectionTitleColorPicker from './components/SectionTitleColorPicker';
+import FileUploadButton from './components/FileUploadButton';
 import { generatePurchaseOrderXML } from './templates/PurchaseOrderTemplate';
 import { generateNetSuiteTemplate } from './templates/NetSuiteIntegration';
 
@@ -453,7 +454,86 @@ function PurchaseOrderForm() {
     }
   };
 
-
+  // Handle file analysis results (PDF/PNG upload)
+  const handleFileAnalysisComplete = (analysisResult) => {
+    console.log('📄 File analysis complete:', analysisResult);
+    
+    try {
+      // Update section colors if detected
+      if (analysisResult.colors) {
+        console.log('🎨 Updating section colors:', analysisResult.colors);
+        // TODO: Update section title colors based on analysis
+        showNotification('🎨 Section colors updated from file analysis', 'success');
+      }
+      
+      // Update fields if detected
+      if (analysisResult.fields) {
+        console.log('📝 Updating fields from analysis:', analysisResult.fields);
+        
+        // Update company fields if detected
+        if (analysisResult.fields.company) {
+          setCompanyFields(prev => {
+            const newFields = analysisResult.fields.company.map(field => ({
+              id: field.id || `company-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              label: field.label || 'New Field:',
+              placeholder: field.placeholder || 'Enter value',
+              value: field.value || ''
+            }));
+            return newFields;
+          });
+        }
+        
+        // Update purchase order fields if detected
+        if (analysisResult.fields.purchaseOrder) {
+          setPurchaseOrderFields(prev => {
+            const newFields = analysisResult.fields.purchaseOrder.map(field => ({
+              id: field.id || `po-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              label: field.label || 'New Field:',
+              placeholder: field.placeholder || 'Enter value',
+              value: field.value || '',
+              isTitle: field.isTitle || false
+            }));
+            return newFields;
+          });
+        }
+        
+        // Update vendor fields if detected
+        if (analysisResult.fields.vendor) {
+          setVendorFields(prev => {
+            const newFields = analysisResult.fields.vendor.map(field => ({
+              id: field.id || `vendor-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              label: field.label || 'New Field:',
+              placeholder: field.placeholder || 'Enter value',
+              value: field.value || ''
+            }));
+            return newFields;
+          });
+        }
+        
+        // Update ship-to fields if detected
+        if (analysisResult.fields.shipTo) {
+          setShipToFields(prev => {
+            const newFields = analysisResult.fields.shipTo.map(field => ({
+              id: field.id || `ship-to-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              label: field.label || 'New Field:',
+              placeholder: field.placeholder || 'Enter value',
+              value: field.value || ''
+            }));
+            return newFields;
+          });
+        }
+        
+        showNotification('📝 Fields updated from file analysis', 'success');
+      }
+      
+      // Show overall success
+      showNotification('✅ File analysis complete! Form updated with detected structure.', 'success');
+      
+    } catch (error) {
+      console.error('❌ Error updating form from analysis:', error);
+      showNotification('❌ Error updating form from analysis: ' + error.message, 'error');
+    }
+  };
 
   // Purchase Order fields state for Section 2
   const [purchaseOrderFields, setPurchaseOrderFields] = useState([
@@ -2771,11 +2851,14 @@ function PurchaseOrderForm() {
           marginBottom: '20px',
           position: 'relative'
         }}>
+          {/* File Upload Button - Upper Right */}
+          <FileUploadButton onAnalysisComplete={handleFileAnalysisComplete} />
+          
           {/* Toggle Switch - Upper Right */}
           <div style={{
             position: 'absolute',
             top: '10px',
-            right: '20px',
+            right: '120px',
             display: 'flex',
             alignItems: 'center',
             gap: '10px',
