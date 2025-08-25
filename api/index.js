@@ -252,11 +252,10 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Serve static files from React build
+// Serve static files from React build (works for both local and Vercel)
 const buildPath = path.join(__dirname, '../build');
 
-// Check if we're in production (Vercel) or local development
-if (process.env.NODE_ENV === 'production' || fs.existsSync(buildPath)) {
+if (fs.existsSync(buildPath)) {
   // Serve static files
   app.use(express.static(buildPath));
   

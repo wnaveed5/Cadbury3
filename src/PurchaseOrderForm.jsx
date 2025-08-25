@@ -495,45 +495,8 @@ function PurchaseOrderForm() {
           setPurchaseOrderFields(prev => {
             console.log('📋 Existing purchase order fields:', prev);
             return prev.map(existingField => {
-              // Try to find a matching field from analysis
-              const matchingField = analysisResult.fields.purchaseOrder.find(f => 
-                f.id === existingField.id || 
-                f.label === existingField.label ||
-                f.placeholder === existingField.placeholder ||
-                // More flexible matching for common patterns
-                (existingField.label === 'DATE:' && f.label && f.label.includes('DATE')) ||
-                (existingField.label === 'PO #:' && f.label && f.label.includes('PO')) ||
-                (existingField.label === 'Purchase Order' && f.label && f.label.includes('Purchase Order'))
-              );
-              
-              // If no direct match, try to find by field type
-              if (!matchingField) {
-                if (existingField.id === 'po-date') {
-                  // Look for any field that contains date information
-                  const dateField = analysisResult.fields.purchaseOrder.find(f => 
-                    f.value && f.value.match(/\d{2}-\d{2}-\d{4}/) // Matches DD-MM-YYYY format
-                  );
-                  if (dateField) {
-                    console.log(`📋 Found date field by value pattern:`, dateField);
-                    return { ...existingField, value: dateField.value };
-                  }
-                }
-                
-                if (existingField.id === 'po-number') {
-                  // Look for any field that contains PO number information
-                  const poField = analysisResult.fields.purchaseOrder.find(f => 
-                    f.value && f.value.match(/\[\d+\]/) // Matches [123456] format
-                  );
-                  if (poField) {
-                    // Extract just the number from [123456]
-                    const poNumber = poField.value.replace(/[\[\]]/g, '');
-                    console.log(`📋 Found PO field by value pattern:`, poField, `Extracted:`, poNumber);
-                    return { ...existingField, value: poNumber };
-                  }
-                }
-              }
-              
-              console.log(`📋 Field "${existingField.label}" - Match found:`, matchingField);
+              // Try to find a matching field from analysis by ID
+              const matchingField = analysisResult.fields.purchaseOrder.find(f => f.id === existingField.id);
               
               if (matchingField && matchingField.value) {
                 console.log(`📋 Updating "${existingField.label}" with value: "${matchingField.value}"`);
@@ -546,16 +509,14 @@ function PurchaseOrderForm() {
         
         // Update vendor fields if detected - preserve existing structure, update values
         if (analysisResult.fields.vendor) {
+          console.log('🏪 Processing vendor fields:', analysisResult.fields.vendor);
           setVendorFields(prev => {
             return prev.map(existingField => {
-              // Try to find a matching field from analysis
-              const matchingField = analysisResult.fields.vendor.find(f => 
-                f.id === existingField.id || 
-                f.label === existingField.label ||
-                f.placeholder === existingField.placeholder
-              );
+              // Try to find a matching field from analysis by ID
+              const matchingField = analysisResult.fields.vendor.find(f => f.id === existingField.id);
               
               if (matchingField && matchingField.value) {
+                console.log(`🏪 Updating "${existingField.label}" with value: "${matchingField.value}"`);
                 return { ...existingField, value: matchingField.value };
               }
               return existingField;
@@ -565,16 +526,14 @@ function PurchaseOrderForm() {
         
         // Update ship-to fields if detected - preserve existing structure, update values
         if (analysisResult.fields.shipTo) {
+          console.log('📦 Processing ship-to fields:', analysisResult.fields.shipTo);
           setShipToFields(prev => {
             return prev.map(existingField => {
-              // Try to find a matching field from analysis
-              const matchingField = analysisResult.fields.shipTo.find(f => 
-                f.id === existingField.id || 
-                f.label === existingField.label ||
-                f.placeholder === existingField.placeholder
-              );
+              // Try to find a matching field from analysis by ID
+              const matchingField = analysisResult.fields.shipTo.find(f => f.id === existingField.id);
               
               if (matchingField && matchingField.value) {
+                console.log(`📦 Updating "${existingField.label}" with value: "${matchingField.value}"`);
                 return { ...existingField, value: matchingField.value };
               }
               return existingField;
