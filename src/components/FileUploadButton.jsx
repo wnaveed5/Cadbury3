@@ -69,7 +69,7 @@ const FileUploadButton = ({ onAnalysisComplete }) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               image: base64,
-              prompt: 'Extract ALL text from this purchase order image, starting from the VERY TOP LEFT corner (company name, logo, header section) and work your way down to the bottom. CRITICAL: Do not skip any text at the top of the document. Include the company header section, company name, address, phone, fax, website - everything visible from the top down. Then continue with purchase order details, vendor, ship-to, line items, totals, and comments. IMPORTANT: Return the COMPLETE text content - do not truncate or omit any sections. Include every word, number, and symbol you can see. Return ONLY the extracted text, no analysis or formatting.'
+              prompt: 'CRITICAL: Extract EVERY SINGLE PIECE OF TEXT from this purchase order image. Start from the absolute TOP LEFT corner and scan systematically left-to-right, top-to-bottom. DO NOT MISS ANYTHING. Include: 1) Company logo and name at top left, 2) "PURCHASE ORDER" title at top right, 3) DATE field (like "DATE 16-07-2024"), 4) PO # field (like "PO # [123456]"), 5) All vendor information, 6) All ship-to information, 7) All line items with numbers, descriptions, quantities, prices, 8) ALL totals including subtotal, tax, shipping, other, and final total, 9) Comments section. Return the COMPLETE extracted text - no omissions, no truncation. Every word, number, symbol, and field label must be captured.'
             })
           });
           

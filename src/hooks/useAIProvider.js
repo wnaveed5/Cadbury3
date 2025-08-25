@@ -268,11 +268,12 @@ INSTRUCTIONS:
 2. Match data to the CLOSEST appropriate field ID from the list above
 3. Use fuzzy matching - if something looks like a company name at the top, it's probably company-name
 4. If you see "GimBooks" anywhere, that's likely the company name
-5. Dates can be in various formats (MM/DD/YYYY, DD-MM-YYYY, etc.)
-6. PO numbers might be in brackets [123456] - extract just the number
+5. **CRITICAL FOR DATES**: Look for "DATE" followed by actual dates like "16-07-2024", "07/16/2024", etc. If you see "DATE 16-07-2024", extract "16-07-2024" as the value
+6. **CRITICAL FOR PO NUMBERS**: Look for "PO #" followed by numbers like "[123456]" - extract "123456" (without brackets) as the value
 7. For line items, extract ALL items you find (Product XYZ, Product ABC, etc.)
 8. Extract all monetary values with or without $ signs
 9. If a field appears empty or has placeholder text like [Company Name], leave it empty
+10. **PRIORITY**: Focus on extracting the DATE and PO# fields first - these are critical purchase order identifiers
 
 Return a JSON object with this structure:
 {
@@ -422,8 +423,8 @@ Company Section:
 
 Purchase Order Section:
 - po-title: Purchase Order (title)
-- po-date: DATE (look for dates like 16-07-2024, 07/16/2024, etc.)
-- po-number: PO # (look for PO numbers, might be in brackets like [123456])
+- po-date: DATE (CRITICAL: Look for actual dates like 16-07-2024, 07/16/2024, 12/25/2024, etc. If you see [Date] or placeholder text, leave it empty)
+- po-number: PO # (CRITICAL: Look for actual PO numbers like 12345, PO-2024-001, etc. If you see [PO #] or placeholder text, leave it empty)
 
 Vendor Section:
 - vendor-company: Vendor Company Name
@@ -464,11 +465,12 @@ INSTRUCTIONS:
 2. Match data to the CLOSEST appropriate field ID from the list above
 3. Use fuzzy matching - if something looks like a company name at the top, it's probably company-name
 4. If you see "GimBooks" anywhere, that's likely the company name
-5. Dates can be in various formats (MM/DD/YYYY, DD-MM-YYYY, etc.)
-6. PO numbers might be in brackets [123456] - extract just the number
+5. CRITICAL FOR DATES: Look for actual date values like "16-07-2024", "07/16/2024", "December 25, 2024", etc. If you see "[Date]" or placeholder text, leave the value empty
+6. CRITICAL FOR PO NUMBERS: Look for actual PO numbers like "12345", "PO-2024-001", "2024-001", etc. If you see "[PO #]" or placeholder text, leave the value empty
 7. For line items, extract ALL items you find (Product XYZ, Product ABC, etc.)
 8. Extract all monetary values with or without $ signs
-9. If a field appears empty or has placeholder text like [Company Name], leave it empty
+9. If a field appears empty or has placeholder text like [Company Name], [Street Address], [City, ST ZIP], leave it empty
+10. Look carefully at the document structure - DATE and PO# are usually prominent fields that should be easy to spot
 
 Return a JSON object with this structure:
 {
