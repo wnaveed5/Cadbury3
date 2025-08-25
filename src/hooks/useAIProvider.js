@@ -1,21 +1,197 @@
-// AI provider hook - calls our secure server endpoint
-// NOTE: API keys are now stored securely on the server
+// AI provider hook - works directly in the browser
+// Create a .env file in your project root with: REACT_APP_OPENAI_API_KEY=your-api-key-here
 
 export function useAIProvider() {
   async function getFieldSuggestions(payload) {
     try {
-      const response = await fetch('/api/ai/fill', {
+      const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
+      
+      if (!apiKey) {
+        throw new Error('OpenAI API key not configured. Please create a .env file with REACT_APP_OPENAI_API_KEY=your-api-key-here');
+      }
+
+      // Build the messages array
+      const arr = (v) => Array.isArray(v) ? v : [];
+      const safeMap = (xs, fn) => arr(xs).map(fn).filter(Boolean);
+      const todayUS = new Date().toLocaleDateString('en-US', { timeZone: 'America/Chicago' });
+
+      const schemaLines = []
+        .concat(safeMap(payload?.companyFields, f => `"${f.id}": "string"`))
+        .concat(safeMap(payload?.purchaseOrderFields, f => `"${f.id}": "string"`))
+        .concat(safeMap(payload?.vendorFields, f => `"${f.id}": "string"`))
+        .concat(safeMap(payload?.shipToFields, f => `"${f.id}": "string"`));
+
+      const messages = [
+        {
+          role: 'system',
+          content: `You are a professional business data generator. Output ONLY valid JSON (no code fences, no prose).
+Generate realistic purchase order data for a US company.
+
+Rules:
+- Use real US cities and professional formatting.
+- Monetary fields MUST have exactly one leading dollar sign, e.g., "$1,234.56".
+- Do NOT prefix any amount with more than one "$".
+- Return ONLY a single JSON object (no arrays, no extra text).`
+        },
+        {
+          role: 'user',
+          content: `Generate a complete purchase order for a medium enterprise in the general business industry.
+
+Constraints:
+- PO date: today (America/Chicago)
+- Use real US cities and professional formatting
+- 3 line items
+- Totals: subtotal, 8.5% tax, shipping in $25–$75 range, "other" (may be "$0.00"), total must add up
+- Every money value must have exactly one "$" (e.g., "$1,234.56")
+
+Return ONLY a single JSON object with these exact keys:
+
+{
+  ${schemaLines.join(',\n  ')}${schemaLines.length ? ',' : ''}
+
+  "requisitioner": "string",
+  "shipVia": "string",
+  "fob": "string",
+  "shippingTerms": "string",
+
+  "itemNumber1": "string",
+  "description1": "string",
+  "qty1": "string",
+  "rate1": "string",
+  "amount1": "string",
+
+  "itemNumber2": "string",
+  "description2": "string",
+  "qty2": "string",
+  "rate2": "string",
+  "amount2": "string",
+
+  "itemNumber3": "string",
+  "description3": "string",
+  "qty3": "string",
+  "rate3": "string",
+  "amount3": "string",
+
+  "subtotal": "string",   // with $ sign
+  "tax": "string",        // with $ sign
+  "shipping": "string",   // with $ sign
+  "other": "string",      // with $ sign
+  "total": "string",      // with $ sign
+
+  "comments": "string",
+  "contactInfo": "string"
+}`
+        }
+      ];
+
+      // Call OpenAI API directly from the browser
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ payload })
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages,
+          temperature: 0.2,
+          response_format: { type: 'json_object' },
+          max_tokens: 1500
+        })
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`AI call failed: ${errorText}`);
+        throw new Error(`OpenAI API call failed: ${errorText}`);
       }
 
-      const { suggestions } = await response.json();
+      const data = await response.json();
+      const content = data.choices[0]?.message?.content;
+      
+      if (!content) {
+        throw new Error('No content received from OpenAI');
+      }
+
+      // Clean and parse the response
+      let cleaned = content.trim();
+      if (cleaned.startsWith('```json')) {
+        cleaned = cleaned.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+      } else if (cleaned.startsWith('```')) {
+        cleaned = cleaned.replace(/^```\s*/, '').replace(/\s*```$/, '');
+      }
+
+      let parsed;
+      try {
+        parsed = JSON.parse(cleaned);
+      } catch (e) {
+        // Try to salvage the first {...} block
+        const first = cleaned.indexOf('{');
+        const last = cleaned.lastIndexOf('}');
+        if (first !== -1 && last > first) {
+          parsed = JSON.parse(cleaned.slice(first, last + 1));
+        } else {
+          throw e;
+        }
+      }
+
+      // Process suggestions
+      const allFields = [
+        ...arr(payload?.companyFields),
+        ...arr(payload?.purchaseOrderFields),
+        ...arr(payload?.vendorFields),
+        ...arr(payload?.shipToFields),
+        ...arr(payload?.shippingFields)
+      ];
+
+      const fixedExtraIds = [
+        'itemNumber1','description1','qty1','rate1','amount1',
+        'itemNumber2','description2','qty2','rate2','amount2',
+        'itemNumber3','description3','qty3','rate3','amount3',
+        'subtotal','tax','shipping','other','total',
+        'comments','contactInfo'
+      ];
+
+      const allowedIds = new Set([
+        ...allFields.map(f => f.id),
+        ...fixedExtraIds
+      ]);
+
+      const normalize = (s) => String(s || '')
+        .toLowerCase()
+        .replace(/[`"'']/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .replace(/[^a-z0-9]+/g, '');
+
+      const labelToId = Object.fromEntries(
+        allFields.map(f => [normalize(f.label || f.id), f.id])
+      );
+
+      const coerceToString = (v) => {
+        if (typeof v === 'string') return v;
+        if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+        if (v && typeof v === 'object') {
+          if (typeof v.value === 'string') return v.value;
+          if (typeof v.text === 'string') return v.text;
+        }
+        return undefined;
+      };
+
+      const suggestions = {};
+      for (const [rawKey, rawVal] of Object.entries(parsed || {})) {
+        const value = coerceToString(rawVal);
+        if (value === undefined) continue;
+
+        if (allowedIds.has(rawKey)) {
+          suggestions[rawKey] = value;
+          continue;
+        }
+        const maybeId = labelToId[normalize(rawKey)];
+        if (maybeId && allowedIds.has(maybeId)) {
+          suggestions[maybeId] = value;
+        }
+      }
+
       return { suggestions };
     } catch (error) {
       console.error('AI API call failed:', error);
