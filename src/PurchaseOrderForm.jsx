@@ -477,31 +477,8 @@ function PurchaseOrderForm() {
           setCompanyFields(prev => {
             console.log('🏢 Existing company fields:', prev);
             return prev.map(existingField => {
-              // Try to find a matching field from analysis
-              const matchingField = analysisResult.fields.company.find(f => 
-                f.id === existingField.id || 
-                f.label === existingField.label ||
-                f.placeholder === existingField.placeholder ||
-                // More flexible matching for company name
-                (existingField.label === 'Company:' && f.label && f.label.includes('Company')) ||
-                (existingField.label === 'Company Name:' && f.label && f.label.includes('Company'))
-              );
-              
-              // If no direct match, try to find by field type
-              if (!matchingField) {
-                if (existingField.id === 'company-name') {
-                  // Look for any field that contains company name information
-                  const companyField = analysisResult.fields.company.find(f => 
-                    f.value && f.value.includes('GimBooks') // Look for the actual company name
-                  );
-                  if (companyField) {
-                    console.log(`🏢 Found company field by value pattern:`, companyField);
-                    return { ...existingField, value: companyField.value };
-                  }
-                }
-              }
-              
-              console.log(`🏢 Field "${existingField.label}" - Match found:`, matchingField);
+              // Try to find a matching field from analysis by ID
+              const matchingField = analysisResult.fields.company.find(f => f.id === existingField.id);
               
               if (matchingField && matchingField.value) {
                 console.log(`🏢 Updating "${existingField.label}" with value: "${matchingField.value}"`);
@@ -605,6 +582,52 @@ function PurchaseOrderForm() {
           });
         }
         
+        // Update item table if detected
+        if (analysisResult.fields.items && analysisResult.fields.items.length > 0) {
+          console.log('📦 Processing items:', analysisResult.fields.items);
+          
+          // Update line items with extracted data
+          setLineItemData(prev => {
+            const newData = { ...prev };
+            analysisResult.fields.items.forEach((item, index) => {
+              const rowNumber = index + 1;
+              if (newData[rowNumber]) {
+                newData[rowNumber] = {
+                  itemNumber: item.itemNumber || '',
+                  description: item.description || '',
+                  qty: item.qty || '',
+                  rate: item.unitPrice || '',
+                  amount: item.total || ''
+                };
+                console.log(`📦 Updated line item ${rowNumber}:`, newData[rowNumber]);
+              }
+            });
+            return newData;
+          });
+        }
+        
+        // Update totals if detected
+        if (analysisResult.fields.totals && analysisResult.fields.totals.length > 0) {
+          console.log('💰 Processing totals:', analysisResult.fields.totals);
+          
+          setTotalsFields(prev => {
+            return prev.map(existingField => {
+              // Try to find a matching field from analysis
+              const matchingField = analysisResult.fields.totals.find(f => 
+                f.id === existingField.id || 
+                f.label === existingField.label ||
+                f.label.toLowerCase().includes(existingField.label.toLowerCase())
+              );
+              
+              if (matchingField && matchingField.value) {
+                console.log(`💰 Updating "${existingField.label}" with value: "${matchingField.value}"`);
+                return { ...existingField, value: matchingField.value };
+              }
+              return existingField;
+            });
+          });
+        }
+        
         showNotification('📝 Fields updated from file analysis', 'success');
       }
       
@@ -644,6 +667,15 @@ function PurchaseOrderForm() {
 
   // Line Items state for the items table
   const [lineItemRows, setLineItemRows] = useState([1, 2, 3, 4, 5]);
+  
+  // Line Item Data state to store the actual values
+  const [lineItemData, setLineItemData] = useState({
+    1: { itemNumber: '', description: '', qty: '', rate: '', amount: '' },
+    2: { itemNumber: '', description: '', qty: '', rate: '', amount: '' },
+    3: { itemNumber: '', description: '', qty: '', rate: '', amount: '' },
+    4: { itemNumber: '', description: '', qty: '', rate: '', amount: '' },
+    5: { itemNumber: '', description: '', qty: '', rate: '', amount: '' }
+  });
 
   // Totals fields state for Section 9
   const [totalsFields, setTotalsFields] = useState([
@@ -2631,35 +2663,14 @@ function PurchaseOrderForm() {
       return { ...field, value };
     });
     
-    // Capture line item values from the table
-    const capturedLineItems = [];
-    // Get the actual number of rows from the table
-    const actualRows = document.querySelectorAll('.itemtable tbody tr').length;
-
-    
-    for (let rowIndex = 0; rowIndex < actualRows; rowIndex++) {
-      const rowData = {};
-      lineItemColumnOrder.forEach(columnId => {
-        const cellSelector = `tr:nth-child(${rowIndex + 1}) td[data-column="${columnId}"] .editable-field`;
-        const cell = document.querySelector(`.itemtable tbody ${cellSelector}`);
-        const value = cell ? cell.textContent.trim() : '';
-        rowData[columnId] = value;
-
-        
-        // Debug: Check if cell exists and what's in it
-        if (!cell) {
-          console.warn(`⚠️ Cell not found for selector: "${cellSelector}"`);
-          // Try to find the td element to see what's there
-          const tdElement = document.querySelector(`.itemtable tbody tr:nth-child(${rowIndex + 1}) td[data-column="${columnId}"]`);
-          if (tdElement) {
-            
-          } else {
-            console.warn(`⚠️ td element not found for column: ${columnId}`);
-          }
-        }
-      });
-      capturedLineItems.push(rowData);
-    }
+    // Capture line item values from the state (more reliable than DOM scraping)
+    const capturedLineItems = Object.entries(lineItemData).map(([rowNumber, rowData]) => ({
+      itemNumber: rowData.itemNumber,
+      description: rowData.description,
+      qty: rowData.qty,
+      rate: rowData.rate,
+      amount: rowData.amount
+    }));
 
     
     // Capture totals field values using the new state structure
@@ -3218,7 +3229,18 @@ function PurchaseOrderForm() {
                       const config = columnConfig[columnId];
                       return (
                         <td key={`${row}-${columnId}-${rowIndex}-${colIndex}`} colSpan={config.colSpan} data-column={columnId}>
-                          <span className="editable-field" contentEditable="true" data-placeholder={config.placeholder} />
+                          <span 
+                            className="editable-field" 
+                            contentEditable="true" 
+                            data-placeholder={config.placeholder}
+                            onBlur={(e) => {
+                              const newData = { ...lineItemData };
+                              newData[row][columnId] = e.target.textContent.trim();
+                              setLineItemData(newData);
+                            }}
+                          >
+                            {lineItemData[row]?.[columnId] || ''}
+                          </span>
                         </td>
                       );
                     })}

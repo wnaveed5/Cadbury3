@@ -203,66 +203,130 @@ Return ONLY a single JSON object with these exact keys:
     try {
       // No need for API key - handled by serverless function
 
-      const analysisPrompt = `Analyze this purchase order document and extract the following information:
-
-1. **Section Colors**: Identify the colors used for section headers/titles
-2. **Field Values**: Extract the actual values found in the document for each field
+      const analysisPrompt = `Analyze this purchase order document and extract ALL information you can find.
 
 Document Content:
 ${fileContent}
 
-Please return a JSON object with this structure:
+AVAILABLE FIELDS TO POPULATE:
+
+Company Section:
+- company-name: Company Name
+- company-address: Street Address
+- company-city-state: City, ST ZIP
+- company-phone: Phone
+- company-fax: Fax
+- company-website: Website
+
+Purchase Order Section:
+- po-title: Purchase Order (title)
+- po-date: DATE (look for dates like 16-07-2024, 07/16/2024, etc.)
+- po-number: PO # (look for PO numbers, might be in brackets like [123456])
+
+Vendor Section:
+- vendor-company: Vendor Company Name
+- vendor-contact: Contact Person
+- vendor-address: Vendor Street Address
+- vendor-city-state: Vendor City, ST ZIP
+- vendor-phone: Vendor Phone
+- vendor-fax: Vendor Fax
+
+Ship To Section:
+- ship-to-name: Ship To Name/Contact
+- ship-to-company: Ship To Company
+- ship-to-address: Ship To Address
+- ship-to-city-state: Ship To City, ST ZIP
+- ship-to-phone: Ship To Phone
+
+Shipping Info:
+- requisitioner: Requisitioner
+- ship-via: Ship Via
+- fob: F.O.B.
+- shipping-terms: Shipping Terms
+
+Line Items (extract all items you find):
+- For each item, extract: itemNumber, description, qty, rate/unitPrice, amount/total
+
+Totals:
+- subtotal: Subtotal amount
+- tax: Tax amount
+- shipping: Shipping amount
+- other: Other charges
+- total: Total amount
+
+Comments:
+- comments: Any comments or special instructions
+
+INSTRUCTIONS:
+1. Extract EVERY piece of data you can find from the document
+2. Match data to the CLOSEST appropriate field ID from the list above
+3. Use fuzzy matching - if something looks like a company name at the top, it's probably company-name
+4. If you see "GimBooks" anywhere, that's likely the company name
+5. Dates can be in various formats (MM/DD/YYYY, DD-MM-YYYY, etc.)
+6. PO numbers might be in brackets [123456] - extract just the number
+7. For line items, extract ALL items you find (Product XYZ, Product ABC, etc.)
+8. Extract all monetary values with or without $ signs
+9. If a field appears empty or has placeholder text like [Company Name], leave it empty
+
+Return a JSON object with this structure:
 {
   "colors": {
-    "section1": "#hexcolor or color name",
-    "section2": "#hexcolor or color name", 
-    "section3": "#hexcolor or color name",
-    "section4": "#hexcolor or color name"
+    "section1": "color found or 'default'",
+    "section2": "color found or 'default'",
+    "section3": "color found or 'default'",
+    "section4": "color found or 'default'"
   },
   "fields": {
     "company": [
-      {"id": "company-name", "label": "Company Name:", "value": "GimBooks"}
+      {"id": "company-name", "label": "Company Name:", "value": "extracted value or empty"},
+      {"id": "company-address", "label": "Street Address:", "value": "extracted value or empty"},
+      {"id": "company-city-state", "label": "City, ST ZIP:", "value": "extracted value or empty"},
+      {"id": "company-phone", "label": "Phone:", "value": "extracted value or empty"},
+      {"id": "company-fax", "label": "Fax:", "value": "extracted value or empty"},
+      {"id": "company-website", "label": "Website:", "value": "extracted value or empty"}
     ],
     "purchaseOrder": [
-      {"id": "po-title", "label": "Purchase Order", "value": "PURCHASE ORDER"},
-      {"id": "po-date", "label": "DATE:", "value": "16-07-2024"},
-      {"id": "po-number", "label": "PO #:", "value": "123456"}
+      {"id": "po-title", "label": "Purchase Order", "value": "PURCHASE ORDER or similar"},
+      {"id": "po-date", "label": "DATE:", "value": "extracted date"},
+      {"id": "po-number", "label": "PO #:", "value": "extracted PO number"}
     ],
     "vendor": [
-      {"id": "vendor-company", "label": "Company:", "value": ""},
-      {"id": "vendor-contact", "label": "Contact:", "value": ""},
-      {"id": "vendor-address", "label": "Address:", "value": ""},
-      {"id": "vendor-city-state", "label": "City/State:", "value": ""},
-      {"id": "vendor-phone", "label": "Phone:", "value": ""}
+      {"id": "vendor-company", "label": "Company:", "value": "extracted or empty"},
+      {"id": "vendor-contact", "label": "Contact:", "value": "extracted or empty"},
+      {"id": "vendor-address", "label": "Address:", "value": "extracted or empty"},
+      {"id": "vendor-city-state", "label": "City/State:", "value": "extracted or empty"},
+      {"id": "vendor-phone", "label": "Phone:", "value": "extracted or empty"}
     ],
     "shipTo": [
-      {"id": "ship-to-name", "label": "Name:", "value": ""},
-      {"id": "ship-to-company", "label": "Company:", "value": ""},
-      {"id": "ship-to-address", "label": "Address:", "value": ""}
+      {"id": "ship-to-name", "label": "Name:", "value": "extracted or empty"},
+      {"id": "ship-to-company", "label": "Company:", "value": "extracted or empty"},
+      {"id": "ship-to-address", "label": "Address:", "value": "extracted or empty"},
+      {"id": "ship-to-city-state", "label": "City/State:", "value": "extracted or empty"},
+      {"id": "ship-to-phone", "label": "Phone:", "value": "extracted or empty"}
+    ],
+    "shipping": [
+      {"id": "requisitioner", "label": "Requisitioner:", "value": "extracted or empty"},
+      {"id": "ship-via", "label": "Ship Via:", "value": "extracted or empty"},
+      {"id": "fob", "label": "F.O.B.:", "value": "extracted or empty"},
+      {"id": "shipping-terms", "label": "Shipping Terms:", "value": "extracted or empty"}
     ],
     "items": [
-      {"id": "item1", "itemNumber": "23423423", "description": "Product XYZ", "qty": "15", "unitPrice": "150.00", "total": "2,250.00"},
-      {"id": "item2", "itemNumber": "45645645", "description": "Product ABC", "qty": "1", "unitPrice": "75.00", "total": "75.00"}
+      {"id": "item1", "itemNumber": "extract", "description": "extract", "qty": "extract", "unitPrice": "extract", "total": "extract"}
     ],
     "totals": [
-      {"id": "subtotal", "label": "SUBTOTAL", "value": "2,325.00"},
-      {"id": "tax", "label": "TAX", "value": ""},
-      {"id": "shipping", "label": "SHIPPING", "value": ""},
-      {"id": "other", "label": "OTHER", "value": ""},
-      {"id": "total", "label": "TOTAL", "value": "2,325.00"}
+      {"id": "subtotal", "label": "SUBTOTAL", "value": "extract"},
+      {"id": "tax", "label": "TAX", "value": "extract"},
+      {"id": "shipping", "label": "SHIPPING", "value": "extract"},
+      {"id": "other", "label": "OTHER", "value": "extract"},
+      {"id": "total", "label": "TOTAL", "value": "extract"}
+    ],
+    "comments": [
+      {"id": "comments", "label": "Comments:", "value": "extract any comments"}
     ]
   }
 }
 
-IMPORTANT: Extract the actual values you see in the document content. For example:
-- If you see "GimBooks" as the company name, put that as the value
-- If you see "16-07-2024" as the date, put that as the value  
-- If you see "123456" as the PO number, put that as the value
-- If you see item data like "Product XYZ 15 150.00 2,250.00", extract it into the items array
-- If you see totals like "SUBTOTAL 2,325.00", extract them into the totals array
-- For fields that show placeholder text like [Company Name], leave the value empty
-
-Focus on extracting real data values, not just field structure.
+REMEMBER: Extract EVERYTHING you can find and match it to the most appropriate field!
 
 Return ONLY valid JSON, no additional text.`;
 
