@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAIProvider } from '../hooks/useAIProvider';
+import Tesseract from 'tesseract.js';
 
 function FileUploadButton({ onAnalysisComplete }) {
   const [isUploading, setIsUploading] = useState(false);
@@ -31,24 +32,35 @@ function FileUploadButton({ onAnalysisComplete }) {
       
       if (file.type === 'application/pdf') {
         // For PDF, we'll extract text content
-        fileContent = `[PDF File: ${file.name}, Size: ${file.size} bytes]`;
         setUploadStatus('📄 Extracting PDF content...');
+        // For now, use basic info since PDF text extraction requires additional libraries
+        fileContent = `[PDF File: ${file.name}, Size: ${file.size} bytes] - Note: PDF text extraction not yet implemented`;
       } else if (file.type === 'image/png') {
-        // For PNG, convert to base64 for analysis
-        const reader = new FileReader();
-        fileContent = await new Promise((resolve, reject) => {
-          reader.onload = () => {
-            const base64 = reader.result.split(',')[1];
-            resolve(`[PNG Image: ${file.name}, Size: ${file.size} bytes, Base64: ${base64.substring(0, 100)}...]`);
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-        setUploadStatus('🖼️ Processing PNG image...');
+        // For PNG, use OCR to extract text content
+        setUploadStatus('🖼️ Extracting text from PNG image...');
+        
+        try {
+          const result = await Tesseract.recognize(file, 'eng', {
+            logger: m => {
+              if (m.status === 'recognizing text') {
+                setUploadStatus(`🖼️ Extracting text... ${Math.round(m.progress * 100)}%`);
+              }
+            }
+          });
+          
+          fileContent = result.data.text;
+          setUploadStatus('✅ Text extraction complete!');
+        } catch (ocrError) {
+          console.error('OCR failed:', ocrError);
+          // Fallback to basic file info if OCR fails
+          fileContent = `[PNG Image: ${file.name}, Size: ${file.size} bytes, OCR failed]`;
+          setUploadStatus('⚠️ OCR failed, using basic analysis');
+        }
       }
 
       // Use the AI provider to analyze the file
-      console.log('📤 Calling analyzeFile with content:', fileContent.substring(0, 200));
+      console.log('📤 Calling analyzeFile with content length:', fileContent.length);
+      console.log('📤 Content preview:', fileContent.substring(0, 500));
       const analysisResult = await analyzeFile(fileContent);
       console.log('✅ Analysis result:', analysisResult);
 
@@ -70,7 +82,7 @@ function FileUploadButton({ onAnalysisComplete }) {
   return (
     <div className="pdf-upload-container" style={{
       position: 'absolute',
-      top: '10px',
+      top: '100px',
       right: '20px',
       display: 'flex',
       flexDirection: 'column',

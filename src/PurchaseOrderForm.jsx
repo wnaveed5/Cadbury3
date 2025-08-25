@@ -470,56 +470,79 @@ function PurchaseOrderForm() {
       if (analysisResult.fields) {
         console.log('📝 Updating fields from analysis:', analysisResult.fields);
         
-        // Update company fields if detected
+        // Update company fields if detected - preserve existing structure, update values
         if (analysisResult.fields.company) {
           setCompanyFields(prev => {
-            const newFields = analysisResult.fields.company.map(field => ({
-              id: field.id || `company-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-              label: field.label || 'New Field:',
-              placeholder: field.placeholder || 'Enter value',
-              value: field.value || ''
-            }));
-            return newFields;
+            return prev.map(existingField => {
+              // Try to find a matching field from analysis
+              const matchingField = analysisResult.fields.company.find(f => 
+                f.id === existingField.id || 
+                f.label === existingField.label ||
+                f.placeholder === existingField.placeholder
+              );
+              
+              if (matchingField && matchingField.value) {
+                return { ...existingField, value: matchingField.value };
+              }
+              return existingField;
+            });
           });
         }
         
-        // Update purchase order fields if detected
+        // Update purchase order fields if detected - preserve existing structure, update values
         if (analysisResult.fields.purchaseOrder) {
           setPurchaseOrderFields(prev => {
-            const newFields = analysisResult.fields.purchaseOrder.map(field => ({
-              id: field.id || `po-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-              label: field.label || 'New Field:',
-              placeholder: field.placeholder || 'Enter value',
-              value: field.value || '',
-              isTitle: field.isTitle || false
-            }));
-            return newFields;
+            return prev.map(existingField => {
+              // Try to find a matching field from analysis
+              const matchingField = analysisResult.fields.purchaseOrder.find(f => 
+                f.id === existingField.id || 
+                f.label === existingField.label ||
+                f.placeholder === existingField.placeholder
+              );
+              
+              if (matchingField && matchingField.value) {
+                return { ...existingField, value: matchingField.value };
+              }
+              return existingField;
+            });
           });
         }
         
-        // Update vendor fields if detected
+        // Update vendor fields if detected - preserve existing structure, update values
         if (analysisResult.fields.vendor) {
           setVendorFields(prev => {
-            const newFields = analysisResult.fields.vendor.map(field => ({
-              id: field.id || `vendor-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-              label: field.label || 'New Field:',
-              placeholder: field.placeholder || 'Enter value',
-              value: field.value || ''
-            }));
-            return newFields;
+            return prev.map(existingField => {
+              // Try to find a matching field from analysis
+              const matchingField = analysisResult.fields.vendor.find(f => 
+                f.id === existingField.id || 
+                f.label === existingField.label ||
+                f.placeholder === existingField.placeholder
+              );
+              
+              if (matchingField && matchingField.value) {
+                return { ...existingField, value: matchingField.value };
+              }
+              return existingField;
+            });
           });
         }
         
-        // Update ship-to fields if detected
+        // Update ship-to fields if detected - preserve existing structure, update values
         if (analysisResult.fields.shipTo) {
           setShipToFields(prev => {
-            const newFields = analysisResult.fields.shipTo.map(field => ({
-              id: field.id || `ship-to-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-              label: field.label || 'New Field:',
-              placeholder: field.placeholder || 'Enter value',
-              value: field.value || ''
-            }));
-            return newFields;
+            return prev.map(existingField => {
+              // Try to find a matching field from analysis
+              const matchingField = analysisResult.fields.shipTo.find(f => 
+                f.id === existingField.id || 
+                f.label === existingField.label ||
+                f.placeholder === existingField.placeholder
+              );
+              
+              if (matchingField && matchingField.value) {
+                return { ...existingField, value: matchingField.value };
+              }
+              return existingField;
+            });
           });
         }
         

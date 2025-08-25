@@ -202,7 +202,7 @@ Return ONLY a single JSON object with these exact keys:
       const analysisPrompt = `Analyze this purchase order document and extract the following information:
 
 1. **Section Colors**: Identify the colors used for section headers/titles
-2. **Field Structure**: Identify all the fields present in each section
+2. **Field Values**: Extract the actual values found in the document for each field
 
 Document Content:
 ${fileContent}
@@ -211,32 +211,41 @@ Please return a JSON object with this structure:
 {
   "colors": {
     "section1": "#hexcolor or color name",
-    "section2": "#hexcolor or color name",
+    "section2": "#hexcolor or color name", 
     "section3": "#hexcolor or color name",
     "section4": "#hexcolor or color name"
   },
   "fields": {
     "company": [
-      {"id": "company-name", "label": "Company Name:", "placeholder": "Enter company name", "value": ""}
+      {"id": "company-name", "label": "Company Name:", "value": "GimBooks"}
     ],
     "purchaseOrder": [
-      {"id": "po-title", "label": "Purchase Order", "placeholder": "", "value": "Purchase Order", "isTitle": true}
+      {"id": "po-title", "label": "Purchase Order", "value": "PURCHASE ORDER"},
+      {"id": "po-date", "label": "DATE:", "value": "16-07-2024"},
+      {"id": "po-number", "label": "PO #:", "value": "123456"}
     ],
     "vendor": [
-      {"id": "vendor-company", "label": "Company:", "placeholder": "Vendor name", "value": ""}
+      {"id": "vendor-company", "label": "Company:", "value": ""},
+      {"id": "vendor-contact", "label": "Contact:", "value": ""},
+      {"id": "vendor-address", "label": "Address:", "value": ""},
+      {"id": "vendor-city-state", "label": "City/State:", "value": ""},
+      {"id": "vendor-phone", "label": "Phone:", "value": ""}
     ],
     "shipTo": [
-      {"id": "ship-to-name", "label": "Name:", "placeholder": "Contact name", "value": ""}
+      {"id": "ship-to-name", "label": "Name:", "value": ""},
+      {"id": "ship-to-company", "label": "Company:", "value": ""},
+      {"id": "ship-to-address", "label": "Address:", "value": ""}
     ]
   }
 }
 
-Focus on identifying:
-- Company information fields
-- Purchase order details
-- Vendor information
-- Shipping/recipient details
-- Any custom fields that might be present
+IMPORTANT: Extract the actual values you see in the document content. For example:
+- If you see "GimBooks" as the company name, put that as the value
+- If you see "16-07-2024" as the date, put that as the value  
+- If you see "123456" as the PO number, put that as the value
+- For fields that show placeholder text like [Company Name], leave the value empty
+
+Focus on extracting real data values, not just field structure.
 
 Return ONLY valid JSON, no additional text.`;
 

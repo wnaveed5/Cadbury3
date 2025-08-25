@@ -4,11 +4,13 @@
   "description": "Purchase Order Form with Drag and Drop functionality using @dnd-kit",
   "main": "index.js",
   "scripts": {
-    "start": "react-scripts start",
+    "start": "PORT=3000 react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "vercel-dev": "vercel dev"
+    "server": "node server/index.js",
+    "dev": "concurrently \"npm run server\" \"npm run start\"",
+    "vercel-build": "npm run build"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.0.8",
@@ -21,8 +23,10 @@
     "openai": "^5.15.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1"
+    "react-scripts": "5.0.1",
+    "tesseract.js": "^6.0.1"
   },
+  "proxy": "http://localhost:3001",
   "browserslist": {
     "production": [
       ">0.2%",
