@@ -17,6 +17,88 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+// Vision API endpoint for image text extraction
+app.post('/api/vision', async (req, res) => {
+  try {
+    const { image, prompt } = req.body;
+    
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({ error: 'OpenAI API key not configured on server' });
+    }
+
+    if (!image) {
+      return res.status(400).json({ error: 'Image data is required' });
+    }
+
+    // Check image size (base64 data can be large)
+    if (image.length > 20 * 1024 * 1024) { // 20MB limit
+      return res.status(400).json({ error: 'Image data too large. Please use a smaller image.' });
+    }
+
+    // Call OpenAI Vision API
+    console.log('Calling Vision API with image length:', image.length);
+    console.log('OpenAI API Key exists:', !!process.env.OPENAI_API_KEY);
+    
+    const requestBody = {
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: prompt || 'Extract all text from this image. Return only the raw text content, no formatting or analysis.'
+            },
+            {
+              type: 'image_url',
+              image_url: {
+                url: `data:image/png;base64,${image}`,
+                detail: 'high'
+              }
+            }
+          ]
+        }
+      ],
+      max_tokens: 4000
+    };
+    
+    console.log('Request body size:', JSON.stringify(requestBody).length);
+    
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (!response.ok) {
+      console.log('Vision API response not ok:', response.status, response.statusText);
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch (e) {
+        errorData = { error: `HTTP ${response.status}: ${response.statusText}` };
+      }
+      console.log('Vision API error details:', errorData);
+      return res.status(response.status).json({ error: errorData });
+    }
+
+    const data = await response.json();
+    const extractedText = data.choices[0].message.content;
+    
+    return res.status(200).json({ 
+      text: extractedText,
+      success: true 
+    });
+
+  } catch (error) {
+    console.error('Vision API error:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 // AI endpoint for field suggestions (legacy)
 app.post('/api/ai/fill', async (req, res) => {
   try {

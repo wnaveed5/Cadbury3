@@ -63,40 +63,23 @@ const FileUploadButton = ({ onAnalysisComplete }) => {
             reader.readAsDataURL(file);
           });
           
-          // Use OpenAI Chat Completions API with vision for OCR
-          const visionResponse = await fetch('/api/analyze', {
+          // Use our dedicated Vision API endpoint for OCR
+          const visionResponse = await fetch('/api/vision', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              model: 'gpt-4o-mini',
-              messages: [
-                {
-                  role: 'user',
-                  content: [
-                    {
-                      type: 'text',
-                      text: 'Extract ALL text from this purchase order image, starting from the VERY TOP LEFT corner (company name, logo, header section) and work your way down to the bottom. CRITICAL: Do not skip any text at the top of the document. Include the company header section, company name, address, phone, fax, website - everything visible from the top down. Then continue with purchase order details, vendor, ship-to, line items, totals, and comments. IMPORTANT: Return the COMPLETE text content - do not truncate or omit any sections. Include every word, number, and symbol you can see. Return ONLY the extracted text, no analysis or formatting.'
-                    },
-                    {
-                      type: 'image_url',
-                      image_url: {
-                        url: `data:image/png;base64,${base64}`,
-                        detail: 'high'
-                      }
-                    }
-                  ]
-                }
-              ],
-              max_tokens: 4000
+              image: base64,
+              prompt: 'Extract ALL text from this purchase order image, starting from the VERY TOP LEFT corner (company name, logo, header section) and work your way down to the bottom. CRITICAL: Do not skip any text at the top of the document. Include the company header section, company name, address, phone, fax, website - everything visible from the top down. Then continue with purchase order details, vendor, ship-to, line items, totals, and comments. IMPORTANT: Return the COMPLETE text content - do not truncate or omit any sections. Include every word, number, and symbol you can see. Return ONLY the extracted text, no analysis or formatting.'
             })
           });
           
           if (!visionResponse.ok) {
-            throw new Error('Vision API failed');
+            const errorData = await visionResponse.json();
+            throw new Error(`Vision API failed: ${errorData.error || 'Unknown error'}`);
           }
           
           const visionData = await visionResponse.json();
-          fileContent = visionData.choices[0].message.content || '';
+          fileContent = visionData.text || '';
           
           // Clean up the extracted text
           fileContent = fileContent
