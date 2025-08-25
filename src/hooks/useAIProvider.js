@@ -80,8 +80,8 @@ Return ONLY a single JSON object with these exact keys:
         }
       ];
 
-      // Call our serverless function instead of OpenAI directly
-      const response = await fetch('/api/analyze', {
+      // Call our backend server directly
+      const response = await fetch('http://localhost:3001/api/analyze', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -249,9 +249,9 @@ Focus on extracting real data values, not just field structure.
 
 Return ONLY valid JSON, no additional text.`;
 
-      // Call our serverless function instead of OpenAI directly
-      console.log('📡 Making API call via serverless function...');
-      const response = await fetch('/api/analyze', {
+      // Call our backend server directly
+      console.log('📡 Making API call to backend server...');
+      const response = await fetch('http://localhost:3001/api/analyze', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -288,10 +288,13 @@ Return ONLY valid JSON, no additional text.`;
         throw new Error('No content received from OpenAI');
       }
 
+      console.log('🔍 Raw GPT response content:', content);
+
       // Parse the JSON response
       let parsedResult;
       try {
         parsedResult = JSON.parse(content);
+        console.log('🔍 Parsed GPT response:', parsedResult);
       } catch (parseError) {
         console.error('Failed to parse GPT response:', parseError);
         throw new Error('Failed to parse analysis result');
