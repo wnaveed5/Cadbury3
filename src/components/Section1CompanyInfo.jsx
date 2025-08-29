@@ -118,14 +118,6 @@ function Section1CompanyInfo({
         </button>
       </div>
       
-      {/* Drop indicator when palette field is over */}
-      {isPaletteOver && (
-        <div className="drop-indicator">
-          <div className="drop-message">
-            Drop field here
-          </div>
-        </div>
-      )}
     </div>
   );
 }

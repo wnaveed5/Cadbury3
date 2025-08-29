@@ -77,15 +77,6 @@ function Section3Vendor({
       ref={setNodeRef}
       className={`section-3 ${isPaletteOver ? 'palette-over' : ''}`}
       data-palette-over={isPaletteOver}
-      style={{
-        minHeight: '300px',
-        padding: '20px',
-        border: isPaletteOver ? '3px dashed #4CAF50' : '2px solid #ddd',
-        borderRadius: '8px',
-        backgroundColor: isPaletteOver ? 'rgba(76, 175, 80, 0.05)' : 'transparent',
-        transition: 'all 0.2s ease',
-        position: 'relative'
-      }}
     >
       {/* Section Header */}
       <div className="section-header">
@@ -101,25 +92,31 @@ function Section3Vendor({
       </div>
       
       {/* Vendor Fields with Drag and Drop */}
-      <SortableContext 
-        items={vendorFields.map(field => field.id)}
-        strategy={verticalListSortingStrategy}
+      <DndContext 
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={onVendorDragEnd}
       >
-        <div className="vendor-fields-container">
-          {vendorFields.map(field => (
-            <SortableVendorField 
-              key={field.id} 
-              field={field} 
-              onRemove={onRemoveVendorField}
-              onLabelChange={onLabelChange}
-              onContentChange={onContentChange}
-              section="vendor"
-              showDummyData={showDummyData}
-              getNetSuiteVariable={getNetSuiteVariable}
-            />
-          ))}
-        </div>
-      </SortableContext>
+        <SortableContext 
+          items={vendorFields.map(field => field.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <div className="vendor-fields-container">
+            {vendorFields.map(field => (
+              <SortableVendorField 
+                key={field.id} 
+                field={field} 
+                onRemove={onRemoveVendorField}
+                onLabelChange={onLabelChange}
+                onContentChange={onContentChange}
+                section="vendor"
+                showDummyData={showDummyData}
+                getNetSuiteVariable={getNetSuiteVariable}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
       
       {/* Add Field Button */}
       <div className="add-field-section">
@@ -133,28 +130,6 @@ function Section3Vendor({
         </button>
       </div>
       
-      {/* Drop indicator when palette field is over */}
-      {isPaletteOver && (
-        <div className="drop-indicator" style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          padding: '20px 40px',
-          backgroundColor: 'rgba(76, 175, 80, 0.9)',
-          color: 'white',
-          borderRadius: '8px',
-          fontSize: '18px',
-          fontWeight: 'bold',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-          zIndex: 1000,
-          pointerEvents: 'none'
-        }}>
-          <div className="drop-message">
-            ✅ Drop field here to add to VENDOR
-          </div>
-        </div>
-      )}
     </div>
   );
 }

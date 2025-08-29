@@ -707,24 +707,7 @@
 
 
 
-/* Section 2: Purchase Order */
-.section-2-purchase-order {
-  flex: 1 1 100% !important; /* Take full width of droppable zone */
-  width: 100% !important;
-  min-width: 0 !important;
-  margin: 0 !important;
-  padding: 15px !important; /* Equal padding on all sides */
-  box-sizing: border-box !important;
-  border: 1px solid #e5e7eb !important;
-  background: transparent !important; /* No background */
-  border-radius: 8px !important;
-  height: 100% !important;
-  min-height: 200px !important; /* Ensure minimum droppable area */
-  position: relative !important; /* For proper drop zone positioning */
-  z-index: 1 !important; /* Ensure it's above other elements */
-  display: flex !important;
-  flex-direction: column !important;
-}
+/* Old Section 2 styling removed - now uses specific .sortable-section.section-2-purchase-order rules */
 
 /* ============================================================================
    SECTIONS 3 & 4 STYLES - VENDOR & SHIP-TO
@@ -1021,26 +1004,7 @@
   cursor: grab !important;
 }
 
-/* DEBUGGING COLORS - Sortable Section Wrappers */
-.sortable-section.section-1-company-info {
-  background: rgba(59, 130, 246, 0.15) !important; /* Medium blue */
-  border: 4px solid #1d4ed8 !important; /* Darker blue */
-}
-
-.sortable-section.section-2-purchase-order {
-  background: rgba(16, 185, 129, 0.15) !important; /* Medium green */
-  border: 4px solid #047857 !important; /* Darker green */
-}
-
-.sortable-section.section-3 {
-  background: rgba(245, 158, 11, 0.15) !important; /* Medium orange */
-  border: 4px solid #d97706 !important; /* Darker orange */
-}
-
-.sortable-section.section-4 {
-  background: rgba(239, 68, 68, 0.15) !important; /* Medium red */
-  border: 4px solid #dc2626 !important; /* Darker red */
-}
+/* Duplicate section styling removed - now uses specific section rules defined earlier */
 
 .sortable-section:active {
   cursor: grabbing !important;
@@ -1723,42 +1687,68 @@
    DRAG HANDLE STYLES - ALL SECTIONS
    ============================================================================ */
 
-/* Drag handle styling */
+/* Enhanced Uniform Drag Handle Styling */
 .drag-handle {
-  background-color: white !important;
-  border: 2px solid #000000 !important;
-  border-radius: 6px !important;
-  padding: 4px 8px !important;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+  border: 2px solid #4f46e5 !important;
+  border-radius: 8px !important;
+  padding: 6px 10px !important;
   cursor: grab !important;
-  color: #000000 !important;
-  font-weight: bold !important;
+  color: #4f46e5 !important;
+  font-weight: 700 !important;
   font-size: 14px !important;
-  transition: all 0.2s ease !important;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
   user-select: none !important;
-  min-width: 30px !important;
+  min-width: 32px !important;
+  min-height: 28px !important;
   text-align: center !important;
   opacity: 1 !important;
   visibility: visible !important;
-  display: flex !important;
+  display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  z-index: 10 !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+  z-index: 15 !important;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.15), 
+              0 1px 3px rgba(0, 0, 0, 0.1) !important;
   line-height: 1 !important;
+  letter-spacing: 0.5px !important;
+  position: relative !important;
 }
 
 .drag-handle:hover {
-  background-color: #000000 !important;
-  border-color: #000000 !important;
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
+  border-color: #3730a3 !important;
   color: white !important;
-  cursor: grabbing !important;
-  transform: scale(1.05) !important;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
+  cursor: grab !important;
+  transform: translateY(-1px) scale(1.05) !important;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3), 
+              0 2px 6px rgba(0, 0, 0, 0.15) !important;
 }
 
 .drag-handle:active {
   cursor: grabbing !important;
-  transform: scale(1.1) !important;
+  transform: translateY(0) scale(1.02) !important;
+  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.4), 
+              0 1px 3px rgba(0, 0, 0, 0.2) !important;
+  transition: all 0.1s ease !important;
+}
+
+/* Add subtle pulsing animation when dragging is active */
+.drag-handle.dragging {
+  animation: dragPulse 0.8s ease-in-out infinite;
+  cursor: grabbing !important;
+}
+
+@keyframes dragPulse {
+  0%, 100% {
+    transform: scale(1.02);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
 }
 
 /* ============================================================================
@@ -1795,7 +1785,17 @@
   transform: scale(1.1) !important;
 }
 
-/* Add field button - consistent sizing for all sections */
+/* ============================================================================
+   UNIFIED ADD FIELD BUTTON STYLING - OVERRIDE ALL OTHER STYLES
+   ============================================================================ */
+
+/* Master override rule for ALL add-field buttons across all components */
+.section-1-company-info .add-field-btn,
+.section-2-purchase-order .add-field-btn, 
+.section-3 .add-field-btn,
+.section-4 .add-field-btn,
+.add-field-section .add-field-btn,
+.vendor-shipping-columns .add-field-btn,
 .add-field-btn {
   background: #10b981 !important;
   border: none !important;
@@ -1803,27 +1803,57 @@
   font-weight: bold !important;
   color: white !important;
   cursor: pointer !important;
-  width: 24px !important;
-  height: 24px !important;
-  display: flex !important;
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+  min-height: 30px !important;
+  max-width: 30px !important;
+  max-height: 30px !important;
+  display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  transition: all 0.2s ease !important;
-  position: absolute !important;
-  right: 5px !important;
-  top: 50% !important;
-  transform: translateY(-50%) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: static !important;
+  margin: 0 auto !important;
   border-radius: 50% !important;
-  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3) !important;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25) !important;
   line-height: 1 !important;
   padding: 0 !important;
   text-align: center !important;
+  box-sizing: border-box !important;
+  outline: none !important;
+  user-select: none !important;
+  right: auto !important;
+  top: auto !important;
+  left: auto !important;
+  bottom: auto !important;
+  transform: none !important;
 }
 
+/* Unified hover state for ALL add-field buttons */
+.section-1-company-info .add-field-btn:hover,
+.section-2-purchase-order .add-field-btn:hover,
+.section-3 .add-field-btn:hover,
+.section-4 .add-field-btn:hover,
+.add-field-section .add-field-btn:hover,
+.vendor-shipping-columns .add-field-btn:hover,
 .add-field-btn:hover {
   background: #059669 !important;
-  transform: translateY(-50%) scale(1.1) !important;
-  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4) !important;
+  transform: translateY(-1px) scale(1.1) !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4) !important;
+}
+
+/* Unified active state for ALL add-field buttons */
+.section-1-company-info .add-field-btn:active,
+.section-2-purchase-order .add-field-btn:active,
+.section-3 .add-field-btn:active,
+.section-4 .add-field-btn:active,
+.add-field-section .add-field-btn:active,
+.vendor-shipping-columns .add-field-btn:active,
+.add-field-btn:active {
+  transform: translateY(0) scale(1.05) !important;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3) !important;
+  transition: all 0.1s ease !important;
 }
 
 /* Add field section - consistent styling for all sections */
