@@ -79,16 +79,16 @@ function Section3Vendor({
       data-palette-over={isPaletteOver}
     >
       {/* Section Header */}
-      <div className="section-header">
-        VENDOR
-        <span 
-          className="drag-indicator"
-          {...dragAttributes}
-          {...dragListeners}
-          style={{ cursor: 'grab' }}
-        >
+      <div 
+        className="section-header"
+        {...dragAttributes}
+        {...dragListeners}
+        style={{ cursor: 'grab' }}
+      >
+        <span className="drag-indicator">
           ::
         </span>
+        VENDOR
       </div>
       
       {/* Vendor Fields with Drag and Drop */}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './PurchaseOrderForm.css';
 import './section-styles.css';
 import './section-title-colors.css';
@@ -20,6 +20,11 @@ import SortableCommentsField from './components/SortableCommentsField';
 import SortableContactField from './components/SortableContactField';
 
 import { useAIProvider } from './hooks/useAIProvider';
+
+// Import shadcn/ui components
+import { Button } from './components/ui/button';
+import { Card, CardContent } from './components/ui/card';
+import { Badge } from './components/ui/badge';
 
 // Import custom hooks
 import { 
@@ -323,6 +328,7 @@ function PurchaseOrderForm() {
 
   // State for showing dummy data vs field pills
   const [showDummyData, setShowDummyData] = useState(true);
+  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
 
   // Active drag item state for DragOverlay
   const [activeDragItem, setActiveDragItem] = useState(null);
@@ -2204,6 +2210,47 @@ function PurchaseOrderForm() {
   // State for sections 1 and 2 order (Company Info and Purchase Order)
   const [sections1And2Order, setSections1And2Order] = useState(['section1', 'section2']);
   
+  // Add debouncing to prevent jittery section swaps
+  const [isDraggingSection, setIsDraggingSection] = useState(false);
+  const [lastDragOver, setLastDragOver] = useState(null);
+  const dragTimeoutRef = useRef(null);
+  const lastDragTimeRef = useRef(0);
+
+  // Custom collision detection with hysteresis to prevent jittering
+  const customCollisionDetection = (args) => {
+    const { active, droppableRects, droppableContainers, pointerCoordinates } = args;
+    
+    // Only apply custom logic for section1 and section2
+    if (active.id !== 'section1' && active.id !== 'section2') {
+      return rectIntersection(args);
+    }
+    
+    const now = Date.now();
+    const timeSinceLastDrag = now - lastDragTimeRef.current;
+    
+    // Debounce rapid movements
+    if (timeSinceLastDrag < 100) {
+      return lastDragOver ? [{ id: lastDragOver }] : [];
+    }
+    
+    const intersections = rectIntersection(args);
+    
+    if (intersections.length > 0) {
+      const newTarget = intersections[0].id;
+      
+      // Only change target if we've been over it for a reasonable time
+      if (newTarget !== lastDragOver) {
+        lastDragTimeRef.current = now;
+        setLastDragOver(newTarget);
+        return [];  // Don't trigger change immediately
+      }
+      
+      return intersections;
+    }
+    
+    return [];
+  };
+  
   // State for sections 5 and 6 order (Vendor/Ship-To and Shipping Details)
   const [sections5And6Order, setSections5And6Order] = useState(['section5']);  
 
@@ -2278,6 +2325,9 @@ function PurchaseOrderForm() {
 
     // Add dragging state to the dragged element
     if (active.id === 'section1' || active.id === 'section2') {
+      setIsDraggingSection(true);
+      setLastDragOver(null);
+      lastDragTimeRef.current = 0;
       const element = document.getElementById(active.id);
       if (element) {
         element.setAttribute('data-is-dragging', 'true');
@@ -2323,26 +2373,25 @@ function PurchaseOrderForm() {
   const handleSectionDragEnd = (event) => {
     const { active, over } = event;
     
-
+    setIsDraggingSection(false);
+    setLastDragOver(null);
+    lastDragTimeRef.current = 0;
+    
+    // Clear any pending timeout
+    if (dragTimeoutRef.current) {
+      clearTimeout(dragTimeoutRef.current);
+    }
     
     if (!active || !over) {
-
       return;
     }
     
     if (active.id !== over.id) {
-
-      
       setSections1And2Order((prevOrder) => {
-
-        
         const oldIndex = prevOrder.indexOf(active.id);
         const newIndex = prevOrder.indexOf(over.id);
         
-        
-        
         if (oldIndex === -1 || newIndex === -1) {
-  
           return prevOrder;
         }
         
@@ -2931,634 +2980,639 @@ function PurchaseOrderForm() {
 
 
   return (
-    <div className={`purchase-order-container ${!sidebarVisible ? 'sidebar-hidden' : ''}`}>
-      <DndContext 
-        sensors={sensors} 
-        collisionDetection={closestCenter}
-        onDragCancel={() => {
-    
-        }}
-        onDragMove={(event) => {
-          
-        }}
-        onDragStart={(event) => {
-          
-          handleDragStart(event);
-        }}
-        onDragOver={(event) => {
-          
-          handleDragOver(event);
-        }}
-        onDragEnd={(event) => {
-          
-          handleRootDragEnd(event);
-        }}
-      >
-
-      {/* Page Header */}
-      <header className="page-header">
-        <div style={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center', 
-          width: '100%',
-          textAlign: 'center',
-          marginBottom: '20px',
-          position: 'relative'
-        }}>
-          {/* File Upload Button - Upper Right */}
-          <FileUploadButton onAnalysisComplete={handleFileAnalysisComplete} />
-          
-          {/* Toggle Switch - Upper Right */}
-          <div style={{
-            position: 'absolute',
-            top: '10px',
-            right: '120px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            backgroundColor: 'white',
-            padding: '8px 12px',
-            borderRadius: '20px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            border: '1px solid #e0e0e0'
-          }}>
-            <span style={{ 
-              fontSize: '12px', 
-              color: showDummyData ? '#666' : '#333',
-              fontWeight: showDummyData ? 'normal' : 'bold'
-            }}>
-              Dummy Data
-            </span>
-            <button
-              onClick={toggleDataMode}
-              style={{
-                width: '40px',
-                height: '20px',
-                borderRadius: '10px',
-                border: 'none',
-                backgroundColor: showDummyData ? '#ccc' : '#4CAF50',
-                cursor: 'pointer',
-                position: 'relative',
-                transition: 'background-color 0.3s ease'
-              }}
-              title={showDummyData ? 'Switch to Field Pills' : 'Switch to Dummy Data'}
-            >
-              <div style={{
-                width: '16px',
-                height: '16px',
-                borderRadius: '50%',
-                backgroundColor: 'white',
-                position: 'absolute',
-                top: '2px',
-                left: showDummyData ? '2px' : '22px',
-                transition: 'left 0.3s ease',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
-              }} />
-            </button>
-            <span style={{ 
-              fontSize: '12px', 
-              color: showDummyData ? '#333' : '#666',
-              fontWeight: showDummyData ? 'bold' : 'normal'
-            }}>
-              Field Pills
-            </span>
+    <div className="purchase-order-container">
+      {/* Header at top of page */}
+      <header className="w-full py-6 border-b border-gray-300" style={{backgroundColor: '#f5f5f5'}}>
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex items-center justify-between">
+            {/* Centered Title */}
+            <div className="flex-1 text-center">
+              <h1 className="text-3xl font-bold text-gray-900">
+                Purchase Order Form
+              </h1>
+            </div>
+            
+            {/* Options Tab - Right Side */}
+            <div className="relative">
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                onClick={() => setShowOptionsMenu(!showOptionsMenu)}
+              >
+                Options
+                <svg 
+                  className={`ml-2 h-4 w-4 transition-transform ${showOptionsMenu ? 'rotate-180' : ''}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </Button>
+              
+              {/* Dropdown Menu */}
+              {showOptionsMenu && (
+                <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                  <div className="p-4 space-y-4">
+                    {/* Data Mode Toggle Section */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700">Data Mode</span>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={showDummyData ? "secondary" : "outline"} className="text-xs">
+                          Dummy Data
+                        </Badge>
+                        <Button
+                          onClick={toggleDataMode}
+                          variant="ghost"
+                          size="sm"
+                          className={`relative w-12 h-7 rounded-full p-0 hover:scale-105 ${
+                            showDummyData 
+                              ? 'bg-gray-300 hover:bg-gray-400' 
+                              : 'bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 shadow-lg shadow-emerald-500/40'
+                          }`}
+                          title={showDummyData ? 'Switch to Field Pills' : 'Switch to Dummy Data'}
+                        >
+                          <div className={`absolute w-5 h-5 bg-white rounded-full top-1 transition-all duration-300 ease-out shadow-md ${
+                            showDummyData ? 'left-1' : 'left-6'
+                          }`} />
+                        </Button>
+                        <Badge variant={showDummyData ? "outline" : "secondary"} className="text-xs">
+                          Field Pills
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <hr className="border-gray-200" />
+                    
+                    {/* File Upload Section */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700">Upload Document</span>
+                      <div className="file-upload-black-button">
+                        <FileUploadButton onAnalysisComplete={handleFileAnalysisComplete} />
+                      </div>
+                    </div>
+                    
+                    <hr className="border-gray-200" />
+                    
+                    {/* Color Picker Section */}
+                    <div>
+                      <span className="text-sm font-medium text-gray-700 mb-3 block">Section Colors</span>
+                      <SectionTitleColorPicker />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-          
-          <div style={{ marginBottom: '20px' }}>
-            <h1>Purchase Order Management System</h1>
-            <p>Create, edit, and manage purchase orders with ease</p>
-          </div>
-          <SectionTitleColorPicker />
         </div>
-        {/* Sidebar toggle is now handled by AvailableFields component */}
       </header>
 
-      {/* Available Fields Sidebar Component */}
-      <AvailableFields 
-        showNotification={showNotification}
-      />
+      {/* Main Content Area - Form and Sidebar combined */}
+      <div className="main-content-area" data-dragging={isDraggingSection}>
+        <DndContext 
+          sensors={sensors} 
+          collisionDetection={customCollisionDetection}
+          onDragCancel={() => {
+            setIsDraggingSection(false);
+            setActiveDragItem(null);
+            setLastDragOver(null);
+            lastDragTimeRef.current = 0;
+          }}
+          onDragMove={(event) => {
+            // Throttle rapid movements to reduce jittering
+            if (!isDraggingSection) return;
+          }}
+          onDragStart={(event) => {
+            
+            handleDragStart(event);
+          }}
+          onDragOver={(event) => {
+            
+            handleDragOver(event);
+          }}
+          onDragEnd={(event) => {
+            
+            handleRootDragEnd(event);
+          }}
+        >
+          {/* Available Fields Sidebar Component */}
+          <AvailableFields 
+            showNotification={showNotification}
+          />
 
-      
+          {/* Purchase Order Form */}
+          <div className="container">
+            <div className="form-content">
+              {/* Header Section */}
+              <div className="section-container">
+                <div className="header-section vendor-shipping-columns">
+                  {/* Section-level Drag and Drop */}
+                  <SortableContext 
+                    items={sections1And2Order}
+                    strategy={horizontalListSortingStrategy}
+                  >
 
-      {/* Real-time Status Indicator removed per request */}
+                    {/* CRITICAL: Render sections dynamically based on sections1And2Order state */}
+                    {sections1And2Order.map((sectionId, index) => {
 
-      {/* Purchase Order Form */}
-      <div className="container">
-        <div className="form-content">
-          {/* Header Section */}
-          <div className="section-container">
-            <div className="header-section vendor-shipping-columns">
-              {/* Section-level Drag and Drop */}
-              <SortableContext 
-                items={sections1And2Order}
-                strategy={horizontalListSortingStrategy}
-              >
-
-                {/* CRITICAL: Render sections dynamically based on sections1And2Order state */}
-                {sections1And2Order.map((sectionId, index) => {
-
-                  
-                  if (sectionId === 'section1') {
-                    return (
-                      <DraggableSectionWrapper key={`section1-${index}`} id="section1" sectionNumber="1" isSectionHandleDragging={isSectionHandleDragging} showDragHandle={true}>
-                        <Section1CompanyInfo 
-                          companyFields={companyFields}
-                          sensors={sensors}
-                          onCompanyDragEnd={handleCompanyDragEnd}
-                          onAddCompanyField={handleAddCompanyField}
-                          onRemoveCompanyField={handleRemoveCompanyField}
-                          onLabelChange={handleCompanyFieldLabelChange}
-                          onContentChange={handleContentChange}
-                          lastModified={lastModified}
-                          showDummyData={showDummyData}
-                          getNetSuiteVariable={getNetSuiteVariable}
-                        />
-                      </DraggableSectionWrapper>
-                    );
-                  } else if (sectionId === 'section2') {
-                    return (
-                      <DraggableSectionWrapper key={`section2-${index}`} id="section2" sectionNumber="2" isSectionHandleDragging={isSectionHandleDragging} showDragHandle={true}>
-                        <Section2PurchaseOrder 
-                          purchaseOrderFields={purchaseOrderFields}
-                          sensors={sensors}
-                          onPurchaseOrderDragEnd={handlePurchaseOrderDragEnd}
-                          onAddPurchaseOrderField={handleAddPurchaseOrderField}
-                          onRemovePurchaseOrderField={handleRemovePurchaseOrderField}
-                          onLabelChange={handlePurchaseOrderFieldLabelChange}
-                          onContentChange={handleContentChange}
-                          lastModified={poLastModified}
-                          showDummyData={showDummyData}
-                          getNetSuiteVariable={getNetSuiteVariable}
-                        />
-                      </DraggableSectionWrapper>
-                    );
-                  }
-                  return null;
-                })}
-              </SortableContext>
-            </div>
-          </div>
-
-          {/* Combined container for sections 3,4,5 swapping */}
-          <div className="major-sections-container" style={{ marginTop: '30px' }}>
-            {/* REMOVED NESTED DndContext - it was blocking palette drops! */}
-            <SortableContext 
-              items={majorSectionsOrder}
-              strategy={verticalListSortingStrategy}
-            >
-              {majorSectionsOrder.map((sectionGroup, index) => {
-                if (sectionGroup === 'vendor-shipto-group') {
-                  return (
-                    <div key={`vendor-shipto-group-${index}`}>
-                      <DraggableGroupHandle id="vendor-shipto-group" label="Vendor & Ship-To">
-                        <div className="vendor-shipto-sections">
-                          <SortableContext 
-                            items={vendorShipToSectionOrder}
-                            strategy={horizontalListSortingStrategy}
-                          >
-                            <div className="vendor-shipping-columns">
-                              {vendorShipToSectionOrder.map((sectionId, sectionIndex) => (
-                                <DraggableSectionWrapper 
-                                  key={`${sectionId}-${sectionIndex}`} 
-                                  id={sectionId} 
-                                  sectionNumber={sectionId === 'section3' ? 3 : 4}
-                                  isSectionHandleDragging={isSectionHandleDragging}
-                                  showDragHandle={true}
-                                >
-                                  {sectionId === 'section3' ? (
-                                    <Section3Vendor 
-                                          vendorFields={vendorFields}
-                                          sensors={sensors}
-                                          onVendorDragEnd={handleVendorDragEnd}
-                                          onAddVendorField={handleAddVendorField}
-                                          onRemoveVendorField={handleRemoveVendorField}
-                                          onLabelChange={handleVendorFieldLabelChange}
-                                          onContentChange={handleContentChange}
-                                          lastModified={Date.now()}
-                                          showDummyData={showDummyData}
-                                          getNetSuiteVariable={getNetSuiteVariable}
-                                        />
-                                    ) : sectionId === 'section4' ? (
-                                        <Section4ShipTo 
-                                          shipToFields={shipToFields}
-                                          sensors={sensors}
-                                          onShipToDragEnd={handleShipToDragEnd}
-                                          onAddShipToField={handleAddShipToField}
-                                          onRemoveShipToField={handleRemoveShipToField}
-                                          onLabelChange={handleShipToFieldLabelChange}
-                                          onContentChange={handleContentChange}
-                                          lastModified={Date.now()}
-                                          showDummyData={showDummyData}
-                                          getNetSuiteVariable={getNetSuiteVariable}
-                                        />
-                                    ) : null}
-                                </DraggableSectionWrapper>
-                                ))}
-                              </div>
-                            </SortableContext>
-                          </div>
-                        </DraggableGroupHandle>
-                      </div>
-                    );
-                  } else if (sectionGroup === 'shipping-section') {
-                    return (
-                      <div key={`shipping-section-${index}`}>
-                        <DraggableGroupHandle id="shipping-section" label="Shipping">
-                          <div className="section-5">
-                            <Section5Shipping 
-                              shippingColumnOrder={shippingColumnOrder}
-                              onShippingColumnDragEnd={handleShippingColumnDragEnd}
-                              showDummyData={showDummyData}
-                            />
-                          </div>
-                        </DraggableGroupHandle>
-                      </div>
-                    );
-                  }
-                  return null;
-                })}
-              </SortableContext>
-            {/* Removed closing DndContext tag */}
-          </div>
-
-
-
-          {/* Items Table */}
-          <div className="sortable-section items-section" style={{ marginBottom: '20px' }}>
-
-            <DndContext
-              collisionDetection={closestCenter}
-              onDragEnd={handleLineItemColumnDragEnd}
-            >
-              <SortableContext items={lineItemColumnOrder.map(columnId => `line-item-header-${columnId}`)} strategy={horizontalListSortingStrategy}>
-                <table className="itemtable">
-              <thead>
-                <tr>
-                  <th></th>
-                  {lineItemColumnOrder.map((columnId, index) => {
-                    const columnConfig = {
-                      itemNumber: { label: 'Item#', colSpan: 3 },
-                      description: { label: 'Description', colSpan: 12 },
-                      qty: { label: 'Qty', colSpan: 2 },
-                      rate: { label: 'Rate', colSpan: 3 },
-                      amount: { label: 'Amount', colSpan: 3 }
-                    };
-                    
-                    // Handle custom columns
-                    if (columnId.startsWith('custom-')) {
-                      const customType = columnId.replace('custom-', '').split('-')[0]; // Get first part after 'custom-'
-                      const label = customType.charAt(0).toUpperCase() + customType.slice(1); // Capitalize first letter
-                      const config = { label: label, colSpan: 3 };
-                      return (
-                        <SortableLineItemColumnHeader key={`header-${columnId}`} id={`line-item-header-${columnId}`}>
-                          <th key={`${columnId}-${index}`} colSpan={config.colSpan}>
-                            {label} ::
-                          </th>
-                        </SortableLineItemColumnHeader>
-                      );
-                    }
-                    
-                    const config = columnConfig[columnId];
-                    return (
-                      <SortableLineItemColumnHeader key={`header-${columnId}`} id={`line-item-header-${columnId}`}>
-                        <th key={`${columnId}-${index}`} colSpan={config.colSpan}>
-                          {config.label} ::
-                        </th>
-                      </SortableLineItemColumnHeader>
-                    );
-                  })}
-                </tr>
-              </thead>
-              <tbody>
-                {lineItemRows.map((row, rowIndex) => (
-                  <tr key={`row-${row}-${rowIndex}`} className="draggable-row">
-                    <td></td>
-                    {lineItemColumnOrder.map((columnId, colIndex) => {
-                      const columnConfig = {
-                        itemNumber: { colSpan: 3, placeholder: 'Item number' },
-                        description: { colSpan: 12, placeholder: 'Item description' },
-                        qty: { colSpan: 2, placeholder: 'Qty' },
-                        rate: { colSpan: 3, placeholder: '$0.00' },
-                        amount: { colSpan: 3, placeholder: '$0.00' }
-                      };
                       
-                      // Handle custom columns
-                      if (columnId.startsWith('custom-')) {
-                        const config = { colSpan: 3, placeholder: 'Custom value' };
+                      if (sectionId === 'section1') {
                         return (
-                          <td key={`${row}-${columnId}-${rowIndex}-${colIndex}`} colSpan={config.colSpan} data-column={columnId}>
-                            <span className="editable-field" contentEditable="true" data-placeholder={config.placeholder} />
-                          </td>
+                          <DraggableSectionWrapper key={`section1-${index}`} id="section1" sectionNumber="1" isSectionHandleDragging={isSectionHandleDragging} showDragHandle={true}>
+                            <Section1CompanyInfo 
+                              companyFields={companyFields}
+                              sensors={sensors}
+                              onCompanyDragEnd={handleCompanyDragEnd}
+                              onAddCompanyField={handleAddCompanyField}
+                              onRemoveCompanyField={handleRemoveCompanyField}
+                              onLabelChange={handleCompanyFieldLabelChange}
+                              onContentChange={handleContentChange}
+                              lastModified={lastModified}
+                              showDummyData={showDummyData}
+                              getNetSuiteVariable={getNetSuiteVariable}
+                            />
+                          </DraggableSectionWrapper>
+                        );
+                      } else if (sectionId === 'section2') {
+                        return (
+                          <DraggableSectionWrapper key={`section2-${index}`} id="section2" sectionNumber="2" isSectionHandleDragging={isSectionHandleDragging} showDragHandle={true}>
+                            <Section2PurchaseOrder 
+                              purchaseOrderFields={purchaseOrderFields}
+                              sensors={sensors}
+                              onPurchaseOrderDragEnd={handlePurchaseOrderDragEnd}
+                              onAddPurchaseOrderField={handleAddPurchaseOrderField}
+                              onRemovePurchaseOrderField={handleRemovePurchaseOrderField}
+                              onLabelChange={handlePurchaseOrderFieldLabelChange}
+                              onContentChange={handleContentChange}
+                              lastModified={poLastModified}
+                              showDummyData={showDummyData}
+                              getNetSuiteVariable={getNetSuiteVariable}
+                            />
+                          </DraggableSectionWrapper>
                         );
                       }
-                      
-                      const config = columnConfig[columnId];
-                      return (
-                        <td key={`${row}-${columnId}-${rowIndex}-${colIndex}`} colSpan={config.colSpan} data-column={columnId}>
-                          <span 
-                            className="editable-field" 
-                            contentEditable="true" 
-                            data-placeholder={config.placeholder}
-                            onBlur={(e) => {
-                              const newData = { ...lineItemData };
-                              newData[row][columnId] = e.target.textContent.trim();
-                              setLineItemData(newData);
-                            }}
-                          >
-                            {lineItemData[row]?.[columnId] || ''}
-                          </span>
-                        </td>
-                      );
+                      return null;
                     })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-              </SortableContext>
-            </DndContext>
-            
-            {/* Add Row and Column Buttons - Grouped and Right Aligned */}
-            <div className="add-buttons-group">
-              <button 
-                className="add-row-btn-grouped" 
-                onClick={handleAddLineItemRow}
-              >
-                + Add Row
-              </button>
-              <button 
-                className="add-column-btn-grouped" 
-                onClick={handleAddLineItemColumn}
-              >
-                + Add Column
-              </button>
-            </div>
-          </div>
+                  </SortableContext>
+                </div>
+              </div>
 
-
-
-          {/* Comments and Totals - Sections 8 & 9 */}
-          <SortableContext items={commentsTotalsSectionOrder} strategy={horizontalListSortingStrategy}>
-            <div className="comments-totals-section" style={{ display: 'flex', gap: '20px' }}>
-                          {commentsTotalsSectionOrder.map((sectionId, index) => {
-              if (sectionId === 'section8') {
-                return (
-                  <div key={`section8-${index}`} id="section8" className="sortable-section comments-section" style={{ flex: 1 }}>
-                    <DraggableSectionHeader id="section8">
-                      Comments or Special Instructions ::
-                    </DraggableSectionHeader>
-                    <div className="section-content">
-                      <DndContext 
-                        sensors={sensors}
-                        collisionDetection={closestCenter}
-                        onDragEnd={handleCommentsDragEnd}
-                      >
-                        <SortableContext 
-                          items={commentsFields.map(field => field.id)}
-                          strategy={verticalListSortingStrategy}
-                        >
-                          {commentsFields.map(field => (
-                            <SortableCommentsField 
-                              key={field.id} 
-                              field={field} 
-                              onRemove={handleRemoveCommentsField}
-                              onLabelChange={handleCommentsFieldLabelChange}
-                              onValueChange={handleCommentsFieldValueChange}
-                              isMainField={field.id === 'comments-main'}
-                              showDummyData={showDummyData}
-                              getNetSuiteVariable={getNetSuiteVariable}
-                            />
-                          ))}
-                        </SortableContext>
-                      </DndContext>
-                      
-                      {/* Add Field Button */}
-                      <div className="add-field-section">
-                        <button 
-                          type="button" 
-                          className="add-field-btn"
-                          onClick={handleAddCommentsField}
-                          title="Add new comments field"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              } else if (sectionId === 'section9') {
-                return (
-                  <div key={`section9-${index}`} id="section9" className="sortable-section totals-section" style={{ flex: 1 }}>
-                    <DraggableSectionHeader id="section9">
-                      Totals ::
-                    </DraggableSectionHeader>
-                    <div className="section-content">
-                      <DndContext 
-                        sensors={sensors}
-                        collisionDetection={closestCenter}
-                        onDragEnd={handleTotalsDragEnd}
-                      >
-                        <SortableContext 
-                          items={totalsFields.map(field => field.id)}
-                          strategy={verticalListSortingStrategy}
-                        >
-                          {totalsFields.map(field => (
-                            <SortableTotalsField 
-                              key={field.id} 
-                              field={field} 
-                              onRemove={handleRemoveTotalsField}
-                              onLabelChange={handleTotalsFieldLabelChange}
-                              onValueChange={handleTotalsFieldValueChange}
-                              showDummyData={showDummyData}
-                              getNetSuiteVariable={getNetSuiteVariable}
-                            />
-                          ))}
-                        </SortableContext>
-                      </DndContext>
-                      
-                      {/* Add Field Button */}
-                      <div className="add-field-section">
-                        <button 
-                          type="button" 
-                          className="add-field-btn"
-                          onClick={handleAddTotalsField}
-                          title="Add new totals field"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              }
-              return null;
-            })}
-            </div>
-          </SortableContext>
-
-
-
-          {/* Contact Information */}
-          <div className="contact-section">
-            <div className="contact-content">
-              <DndContext 
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleContactDragEnd}
-              >
+              {/* Combined container for sections 3,4,5 swapping */}
+              <div className="major-sections-container" style={{ marginTop: '30px' }}>
+                {/* REMOVED NESTED DndContext - it was blocking palette drops! */}
                 <SortableContext 
-                  items={contactFields.map(field => field.id)}
+                  items={majorSectionsOrder}
                   strategy={verticalListSortingStrategy}
                 >
-                  {contactFields.map(field => (
-                    <SortableContactField 
-                      key={field.id} 
-                      field={field} 
-                      onRemove={handleRemoveContactField}
-                      onLabelChange={handleContactFieldLabelChange}
-                      onValueChange={handleContactFieldValueChange}
-                      isMainField={field.id === 'contact-main'}
-                      showDummyData={showDummyData}
-                      getNetSuiteVariable={getNetSuiteVariable}
-                    />
-                  ))}
-                </SortableContext>
-              </DndContext>
-              
-              {/* Add Field Button */}
-              <div className="add-field-section">
-                <button 
-                  type="button" 
-                  className="add-field-btn"
-                  onClick={handleAddContactField}
-                  title="Add new contact field"
+                  {majorSectionsOrder.map((sectionGroup, index) => {
+                    if (sectionGroup === 'vendor-shipto-group') {
+                      return (
+                        <div key={`vendor-shipto-group-${index}`}>
+                          <DraggableGroupHandle id="vendor-shipto-group" label="Vendor & Ship-To">
+                            <div className="vendor-shipto-sections">
+                              <SortableContext 
+                                items={vendorShipToSectionOrder}
+                                strategy={horizontalListSortingStrategy}
+                              >
+                                <div className="vendor-shipping-columns">
+                                  {vendorShipToSectionOrder.map((sectionId, sectionIndex) => (
+                                    <DraggableSectionWrapper 
+                                      key={`${sectionId}-${sectionIndex}`} 
+                                      id={sectionId} 
+                                      sectionNumber={sectionId === 'section3' ? 3 : 4}
+                                      isSectionHandleDragging={isSectionHandleDragging}
+                                      showDragHandle={true}
+                                    >
+                                      {sectionId === 'section3' ? (
+                                        <Section3Vendor 
+                                              vendorFields={vendorFields}
+                                              sensors={sensors}
+                                              onVendorDragEnd={handleVendorDragEnd}
+                                              onAddVendorField={handleAddVendorField}
+                                              onRemoveVendorField={handleRemoveVendorField}
+                                              onLabelChange={handleVendorFieldLabelChange}
+                                              onContentChange={handleContentChange}
+                                              lastModified={Date.now()}
+                                              showDummyData={showDummyData}
+                                              getNetSuiteVariable={getNetSuiteVariable}
+                                            />
+                                        ) : sectionId === 'section4' ? (
+                                            <Section4ShipTo 
+                                              shipToFields={shipToFields}
+                                              sensors={sensors}
+                                              onShipToDragEnd={handleShipToDragEnd}
+                                              onAddShipToField={handleAddShipToField}
+                                              onRemoveShipToField={handleRemoveShipToField}
+                                              onLabelChange={handleShipToFieldLabelChange}
+                                              onContentChange={handleContentChange}
+                                              lastModified={Date.now()}
+                                              showDummyData={showDummyData}
+                                              getNetSuiteVariable={getNetSuiteVariable}
+                                            />
+                                        ) : null}
+                                    </DraggableSectionWrapper>
+                                    ))}
+                                  </div>
+                                </SortableContext>
+                              </div>
+                            </DraggableGroupHandle>
+                          </div>
+                        );
+                      } else if (sectionGroup === 'shipping-section') {
+                        return (
+                          <div key={`shipping-section-${index}`}>
+                            <DraggableGroupHandle id="shipping-section" label="Shipping">
+                              <div className="section-5">
+                                <Section5Shipping 
+                                  shippingColumnOrder={shippingColumnOrder}
+                                  onShippingColumnDragEnd={handleShippingColumnDragEnd}
+                                  showDummyData={showDummyData}
+                                />
+                              </div>
+                            </DraggableGroupHandle>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })}
+                  </SortableContext>
+                {/* Removed closing DndContext tag */}
+              </div>
+
+
+
+              {/* Items Table */}
+              <div className="sortable-section items-section" style={{ marginBottom: '20px' }}>
+
+                <DndContext
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleLineItemColumnDragEnd}
                 >
-                  +
-                </button>
+                  <SortableContext items={lineItemColumnOrder.map(columnId => `line-item-header-${columnId}`)} strategy={horizontalListSortingStrategy}>
+                    <table className="itemtable">
+                  <thead>
+                    <tr>
+                      <th></th>
+                      {lineItemColumnOrder.map((columnId, index) => {
+                        const columnConfig = {
+                          itemNumber: { label: 'Item#', colSpan: 3 },
+                          description: { label: 'Description', colSpan: 12 },
+                          qty: { label: 'Qty', colSpan: 2 },
+                          rate: { label: 'Rate', colSpan: 3 },
+                          amount: { label: 'Amount', colSpan: 3 }
+                        };
+                        
+                        // Handle custom columns
+                        if (columnId.startsWith('custom-')) {
+                          const customType = columnId.replace('custom-', '').split('-')[0]; // Get first part after 'custom-'
+                          const label = customType.charAt(0).toUpperCase() + customType.slice(1); // Capitalize first letter
+                          const config = { label: label, colSpan: 3 };
+                          return (
+                            <SortableLineItemColumnHeader key={`header-${columnId}`} id={`line-item-header-${columnId}`}>
+                              <th key={`${columnId}-${index}`} colSpan={config.colSpan}>
+                                {label} ::
+                              </th>
+                            </SortableLineItemColumnHeader>
+                          );
+                        }
+                        
+                        const config = columnConfig[columnId];
+                        return (
+                          <SortableLineItemColumnHeader key={`header-${columnId}`} id={`line-item-header-${columnId}`}>
+                            <th key={`${columnId}-${index}`} colSpan={config.colSpan}>
+                              {config.label} ::
+                            </th>
+                          </SortableLineItemColumnHeader>
+                        );
+                      })}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {lineItemRows.map((row, rowIndex) => (
+                      <tr key={`row-${row}-${rowIndex}`} className="draggable-row">
+                        <td></td>
+                        {lineItemColumnOrder.map((columnId, colIndex) => {
+                          const columnConfig = {
+                            itemNumber: { colSpan: 3, placeholder: 'Item number' },
+                            description: { colSpan: 12, placeholder: 'Item description' },
+                            qty: { colSpan: 2, placeholder: 'Qty' },
+                            rate: { colSpan: 3, placeholder: '$0.00' },
+                            amount: { colSpan: 3, placeholder: '$0.00' }
+                          };
+                          
+                          // Handle custom columns
+                          if (columnId.startsWith('custom-')) {
+                            const config = { colSpan: 3, placeholder: 'Custom value' };
+                            return (
+                              <td key={`${row}-${columnId}-${rowIndex}-${colIndex}`} colSpan={config.colSpan} data-column={columnId}>
+                                <span className="editable-field" contentEditable="true" data-placeholder={config.placeholder} />
+                              </td>
+                            );
+                          }
+                          
+                          const config = columnConfig[columnId];
+                          return (
+                            <td key={`${row}-${columnId}-${rowIndex}-${colIndex}`} colSpan={config.colSpan} data-column={columnId}>
+                              <span 
+                                className="editable-field" 
+                                contentEditable="true" 
+                                data-placeholder={config.placeholder}
+                                onBlur={(e) => {
+                                  const newData = { ...lineItemData };
+                                  newData[row][columnId] = e.target.textContent.trim();
+                                  setLineItemData(newData);
+                                }}
+                              >
+                                {lineItemData[row]?.[columnId] || ''}
+                              </span>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                  </SortableContext>
+                </DndContext>
+                
+                {/* Add Row and Column Buttons - Grouped and Right Aligned */}
+                <div className="add-buttons-group">
+                  <button 
+                    className="add-row-btn-grouped" 
+                    onClick={handleAddLineItemRow}
+                  >
+                    + Add Row
+                  </button>
+                  <button 
+                    className="add-column-btn-grouped" 
+                    onClick={handleAddLineItemColumn}
+                  >
+                    + Add Column
+                  </button>
+                </div>
               </div>
-            </div>
-          </div>
 
-          {/* Action Buttons */}
-          <div className="button-section">
 
-            <button className="btn" onClick={handleAIFill}>
-              🤖 AI Fill
-            </button>
-            <button className="btn save-btn" onClick={handleSaveForm}>
-              💾 Save Form & Generate XML
-            </button>
 
-          </div>
-
-          {/* Change History Display */}
-          {changeHistory.length > 0 && (
-            <div className="change-history-section">
-              <div className="section-header">
-                📝 Change History ({changeHistory.length} changes)
-                <button className="clear-history-btn" onClick={clearChangeHistory}>
-                  🗑️ Clear
-                </button>
-              </div>
-              <div className="change-list">
-                {changeHistory.slice(0, 10).map((change, index) => (
-                  <div key={`${change.id}-${index}`} className="change-item">
-                    <span className="change-time">
-                      {new Date(change.timestamp).toLocaleTimeString()}
-                    </span>
-                    <span className="change-type">{change.type}</span>
-                    <span className="change-field">{change.fieldId}</span>
-                    <span className="change-old">{change.oldValue || 'empty'}</span>
-                    <span className="change-arrow">→</span>
-                    <span className="change-new">{change.newValue || 'empty'}</span>
+              {/* Comments and Totals - Sections 8 & 9 */}
+              <SortableContext items={commentsTotalsSectionOrder} strategy={horizontalListSortingStrategy}>
+                <div className="comments-totals-section" style={{ display: 'flex', gap: '20px' }}>
+                              {commentsTotalsSectionOrder.map((sectionId, index) => {
+                    if (sectionId === 'section8') {
+                      return (
+                        <div key={`section8-${index}`} id="section8" className="sortable-section comments-section" style={{ flex: 1 }}>
+                          <DraggableSectionHeader id="section8">
+                            Comments or Special Instructions ::
+                          </DraggableSectionHeader>
+                          <div className="section-content">
+                            <DndContext 
+                              sensors={sensors}
+                              collisionDetection={closestCenter}
+                              onDragEnd={handleCommentsDragEnd}
+                            >
+                              <SortableContext 
+                                items={commentsFields.map(field => field.id)}
+                                strategy={verticalListSortingStrategy}
+                              >
+                                {commentsFields.map(field => (
+                                  <SortableCommentsField 
+                                    key={field.id} 
+                                    field={field} 
+                                    onRemove={handleRemoveCommentsField}
+                                    onLabelChange={handleCommentsFieldLabelChange}
+                                    onValueChange={handleCommentsFieldValueChange}
+                                    isMainField={field.id === 'comments-main'}
+                                    showDummyData={showDummyData}
+                                    getNetSuiteVariable={getNetSuiteVariable}
+                                  />
+                                ))}
+                              </SortableContext>
+                            </DndContext>
+                            
+                            {/* Add Field Button */}
+                            <div className="add-field-section">
+                              <button 
+                                type="button" 
+                                className="add-field-btn"
+                                onClick={handleAddCommentsField}
+                                title="Add new comments field"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    } else if (sectionId === 'section9') {
+                      return (
+                        <div key={`section9-${index}`} id="section9" className="sortable-section totals-section" style={{ flex: 1 }}>
+                          <DraggableSectionHeader id="section9">
+                            Totals ::
+                          </DraggableSectionHeader>
+                          <div className="section-content">
+                            <DndContext 
+                              sensors={sensors}
+                              collisionDetection={closestCenter}
+                              onDragEnd={handleTotalsDragEnd}
+                            >
+                              <SortableContext 
+                                items={totalsFields.map(field => field.id)}
+                                strategy={verticalListSortingStrategy}
+                              >
+                                {totalsFields.map(field => (
+                                  <SortableTotalsField 
+                                    key={field.id} 
+                                    field={field} 
+                                    onRemove={handleRemoveTotalsField}
+                                    onLabelChange={handleTotalsFieldLabelChange}
+                                    onValueChange={handleTotalsFieldValueChange}
+                                    showDummyData={showDummyData}
+                                    getNetSuiteVariable={getNetSuiteVariable}
+                                  />
+                                ))}
+                              </SortableContext>
+                            </DndContext>
+                            
+                            {/* Add Field Button */}
+                            <div className="add-field-section">
+                              <button 
+                                type="button" 
+                                className="add-field-btn"
+                                onClick={handleAddTotalsField}
+                                title="Add new totals field"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })}
                   </div>
-                ))}
-                {changeHistory.length > 10 && (
-                  <div className="change-more">
-                    ... and {changeHistory.length - 10} more changes
+                </SortableContext>
+
+
+
+                {/* Contact Information */}
+                <div className="contact-section">
+                  <div className="contact-content">
+                    <DndContext 
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={handleContactDragEnd}
+                    >
+                      <SortableContext 
+                        items={contactFields.map(field => field.id)}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        {contactFields.map(field => (
+                          <SortableContactField 
+                            key={field.id} 
+                            field={field} 
+                            onRemove={handleRemoveContactField}
+                            onLabelChange={handleContactFieldLabelChange}
+                            onValueChange={handleContactFieldValueChange}
+                            isMainField={field.id === 'contact-main'}
+                            showDummyData={showDummyData}
+                            getNetSuiteVariable={getNetSuiteVariable}
+                          />
+                        ))}
+                      </SortableContext>
+                    </DndContext>
+                    
+                    {/* Add Field Button */}
+                    <div className="add-field-section">
+                      <button 
+                        type="button" 
+                        className="add-field-btn"
+                        onClick={handleAddContactField}
+                        title="Add new contact field"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="button-section">
+
+                  <button className="btn" onClick={handleAIFill}>
+                    🤖 AI Fill
+                  </button>
+                  <button className="btn save-btn" onClick={handleSaveForm}>
+                    💾 Save Form & Generate XML
+                  </button>
+
+                </div>
+
+                {/* Change History Display */}
+                {changeHistory.length > 0 && (
+                  <div className="change-history-section">
+                    <div className="section-header">
+                      📝 Change History ({changeHistory.length} changes)
+                      <button className="clear-history-btn" onClick={clearChangeHistory}>
+                        🗑️ Clear
+                      </button>
+                    </div>
+                    <div className="change-list">
+                      {changeHistory.slice(0, 10).map((change, index) => (
+                        <div key={`${change.id}-${index}`} className="change-item">
+                          <span className="change-time">
+                            {new Date(change.timestamp).toLocaleTimeString()}
+                          </span>
+                          <span className="change-type">{change.type}</span>
+                          <span className="change-field">{change.fieldId}</span>
+                          <span className="change-old">{change.oldValue || 'empty'}</span>
+                          <span className="change-arrow">→</span>
+                          <span className="change-new">{change.newValue || 'empty'}</span>
+                        </div>
+                      ))}
+                      {changeHistory.length > 10 && (
+                        <div className="change-more">
+                          ... and {changeHistory.length - 10} more changes
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* XML Output Modal */}
+                {showXMLModal && (
+                  <div className="xml-modal-overlay" onClick={closeXMLModal}>
+                    <div className="xml-modal" onClick={(e) => e.stopPropagation()}>
+                      <div className="xml-modal-header">
+                        <h3>📄 Generated XML Output</h3>
+                        <button className="xml-modal-close" onClick={closeXMLModal}>×</button>
+                      </div>
+                      <div className="xml-modal-content">
+                        <div className="xml-output-container">
+                          <pre className="xml-code">{xmlOutput}</pre>
+                        </div>
+                      </div>
+                      <div className="xml-modal-actions">
+                        <button className="btn copy-btn" onClick={copyXMLToClipboard}>
+                          📋 Copy XML
+                        </button>
+                        <button className="btn download-btn" onClick={downloadXML}>
+                          📥 Download XML
+                        </button>
+                        <button className="btn netsuite-btn" onClick={handleNetSuiteIntegration}>
+                          🔀 Generate NetSuite XML
+                        </button>
+                        <button className="btn close-btn" onClick={closeXMLModal}>
+                          Close
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* NetSuite XML Modal */}
+                {showNetSuiteModal && (
+                  <div className="xml-modal-overlay" onClick={closeNetSuiteModal}>
+                    <div className="xml-modal" onClick={(e) => e.stopPropagation()}>
+                      <div className="xml-modal-header">
+                        <h3>🔀 NetSuite XML Template</h3>
+                        <button className="xml-modal-close" onClick={closeNetSuiteModal}>×</button>
+                      </div>
+                      <div className="xml-modal-content">
+                        <div className="xml-output-container">
+                          <pre className="xml-code">{netSuiteOutput}</pre>
+                        </div>
+                      </div>
+                      <div className="xml-modal-actions">
+                        <button className="btn copy-btn" onClick={copyNetSuiteToClipboard}>
+                          📋 Copy NetSuite XML
+                        </button>
+                        <button className="btn download-btn" onClick={downloadNetSuiteXML}>
+                          📥 Download NetSuite XML
+                        </button>
+                        <button className="btn close-btn" onClick={closeNetSuiteModal}>
+                          Close
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
             </div>
-          )}
 
-          {/* XML Output Modal */}
-          {showXMLModal && (
-            <div className="xml-modal-overlay" onClick={closeXMLModal}>
-              <div className="xml-modal" onClick={(e) => e.stopPropagation()}>
-                <div className="xml-modal-header">
-                  <h3>📄 Generated XML Output</h3>
-                  <button className="xml-modal-close" onClick={closeXMLModal}>×</button>
-                </div>
-                <div className="xml-modal-content">
-                  <div className="xml-output-container">
-                    <pre className="xml-code">{xmlOutput}</pre>
-                  </div>
-                </div>
-                <div className="xml-modal-actions">
-                  <button className="btn copy-btn" onClick={copyXMLToClipboard}>
-                    📋 Copy XML
-                  </button>
-                  <button className="btn download-btn" onClick={downloadXML}>
-                    📥 Download XML
-                  </button>
-                  <button className="btn netsuite-btn" onClick={handleNetSuiteIntegration}>
-                    🔀 Generate NetSuite XML
-                  </button>
-                  <button className="btn close-btn" onClick={closeXMLModal}>
-                    Close
-                  </button>
-                </div>
+          {/* DragOverlay only for palette fields */}
+          <DragOverlay>
+            {activeDragItem && activeDragItem.type === 'palette-field' ? (
+              // Show the actual field item when dragging from palette
+              <div className="field-item dragging-overlay">
+                <span className="field-name">{activeDragItem.data?.label || 'Field'}</span>
+                <button className="add-field-btn">+</button>
               </div>
-            </div>
-          )}
-
-          {/* NetSuite XML Modal */}
-          {showNetSuiteModal && (
-            <div className="xml-modal-overlay" onClick={closeNetSuiteModal}>
-              <div className="xml-modal" onClick={(e) => e.stopPropagation()}>
-                <div className="xml-modal-header">
-                  <h3>🔀 NetSuite XML Template</h3>
-                  <button className="xml-modal-close" onClick={closeNetSuiteModal}>×</button>
-                </div>
-                <div className="xml-modal-content">
-                  <div className="xml-output-container">
-                    <pre className="xml-code">{netSuiteOutput}</pre>
-                  </div>
-                </div>
-                <div className="xml-modal-actions">
-                  <button className="btn copy-btn" onClick={copyNetSuiteToClipboard}>
-                    📋 Copy NetSuite XML
-                  </button>
-                  <button className="btn download-btn" onClick={downloadNetSuiteXML}>
-                    📥 Download NetSuite XML
-                  </button>
-                  <button className="btn close-btn" onClick={closeNetSuiteModal}>
-                    Close
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-
-
-
-
-        </div>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
       </div>
-
-        {/* DragOverlay only for palette fields */}
-        <DragOverlay>
-          {activeDragItem && activeDragItem.type === 'palette-field' ? (
-            // Show the actual field item when dragging from palette
-            <div className="field-item dragging-overlay">
-              <span className="field-name">{activeDragItem.data?.label || 'Field'}</span>
-              <button className="add-field-btn">+</button>
-            </div>
-          ) : null}
-        </DragOverlay>
-      </DndContext>
       
       {/* Notification Container */}
       <div id="notification-container"></div>

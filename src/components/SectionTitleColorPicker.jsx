@@ -6,16 +6,12 @@ const SectionTitleColorPicker = () => {
 
   // Update CSS variables when color changes
   useEffect(() => {
-        
-    
     document.documentElement.style.setProperty('--section-title-background', titleBlockColor);
     
     // Calculate text color based on background brightness
     const brightness = getBrightness(titleBlockColor);
     const textColor = brightness > 128 ? '#000000' : '#ffffff';
     document.documentElement.style.setProperty('--section-title-text', textColor);
-    
-            
     
     // Update all section headers with the new color
     updateSectionHeaderColors(titleBlockColor, textColor);
@@ -46,13 +42,12 @@ const SectionTitleColorPicker = () => {
     }
   };
 
-  // Handle hex input blur (when user finishes typing)
+  // Handle hex input blur
   const handleHexBlur = (e) => {
     const value = e.target.value;
     if (value.match(/^#[0-9A-Fa-f]{6}$/)) {
       setTitleBlockColor(value);
     } else {
-      // Reset to current color if invalid
       e.target.value = titleBlockColor;
     }
   };
@@ -68,10 +63,9 @@ const SectionTitleColorPicker = () => {
     <div className="section-title-color-picker" style={{ 
       position: 'relative',
       zIndex: 1000,
-      backgroundColor: 'white',
       padding: '10px',
       borderRadius: '8px',
-      border: '1px solid #e5e7eb'
+      border: 'none'
     }}>
       <button
         className="color-picker-toggle"
@@ -83,7 +77,7 @@ const SectionTitleColorPicker = () => {
         style={{
           backgroundColor: titleBlockColor,
           color: getBrightness(titleBlockColor) > 128 ? '#000000' : '#ffffff',
-          border: '2px solid #e5e7eb',
+          border: 'none',
           borderRadius: '8px',
           padding: '8px 12px',
           fontSize: '14px',
@@ -102,14 +96,12 @@ const SectionTitleColorPicker = () => {
             height: '20px',
             borderRadius: '50%',
             backgroundColor: titleBlockColor,
-            border: '2px solid #ffffff',
+            border: '2px solid #e5e7eb',
             boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
           }}
         />
         Title Colors
       </button>
-      
-
 
       {isOpen && (
         <div className="color-picker-panel" style={{

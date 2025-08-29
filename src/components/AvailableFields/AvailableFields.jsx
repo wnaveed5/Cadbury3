@@ -94,22 +94,6 @@ const AvailableFields = ({
           </div>
         ))}
       </div>
-      
-      {/* Drag Instructions */}
-      <div className="drag-instructions">
-        <div className="instruction-item">
-          <span className="instruction-icon">Target</span>
-          <span>Drag fields to any section</span>
-        </div>
-        <div className="instruction-item">
-          <span className="instruction-icon">Visual</span>
-          <span>Visual feedback shows drop zones</span>
-        </div>
-        <div className="instruction-item">
-          <span className="instruction-icon">Reorder</span>
-          <span>Fields can be reordered within sections</span>
-        </div>
-      </div>
     </div>
   );
 };

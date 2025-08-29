@@ -121,16 +121,7 @@ const FileUploadButton = ({ onAnalysisComplete }) => {
   };
 
   return (
-    <div className="pdf-upload-container" style={{
-      position: 'absolute',
-      top: '100px',
-      right: '20px',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: '8px',
-      zIndex: 1000
-    }}>
+    <>
       {/* Upload Button */}
       <label 
         htmlFor="pdf-upload" 
@@ -138,23 +129,24 @@ const FileUploadButton = ({ onAnalysisComplete }) => {
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '8px',
-          padding: '10px 16px',
+          gap: '6px',
+          padding: '8px 12px',
           backgroundColor: '#8b5cf6',
           color: 'white',
-          borderRadius: '8px',
+          borderRadius: '6px',
           cursor: isUploading ? 'not-allowed' : 'pointer',
-          fontSize: '14px',
+          fontSize: '13px',
           fontWeight: '500',
           opacity: isUploading ? 0.6 : 1,
           transition: 'all 0.2s ease',
-          boxShadow: '0 2px 8px rgba(139, 92, 246, 0.3)',
-          border: 'none'
+          boxShadow: '0 2px 4px rgba(139, 92, 246, 0.3)',
+          border: 'none',
+          whiteSpace: 'nowrap'
         }}
         title="Upload PDF or PNG to analyze structure and colors"
       >
         {isUploading ? '⏳' : '📄'} 
-        {isUploading ? 'Analyzing...' : 'Upload File'}
+        {isUploading ? 'Analyzing...' : 'Upload'}
       </label>
       
       <input
@@ -169,17 +161,27 @@ const FileUploadButton = ({ onAnalysisComplete }) => {
       {/* Status Message */}
       {uploadStatus && (
         <div className="upload-status" style={{
-          fontSize: '12px',
+          position: 'absolute',
+          top: '100%',
+          right: '0',
+          marginTop: '8px',
+          fontSize: '11px',
           color: uploadStatus.includes('❌') ? '#ef4444' : 
                  uploadStatus.includes('✅') ? '#10b981' : '#6b7280',
-          textAlign: 'center',
+          textAlign: 'right',
           maxWidth: '200px',
-          wordWrap: 'break-word'
+          wordWrap: 'break-word',
+          background: 'white',
+          padding: '4px 8px',
+          borderRadius: '4px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          border: '1px solid #e0e0e0',
+          zIndex: 1001
         }}>
           {uploadStatus}
         </div>
       )}
-    </div>
+    </>
   );
 };
 

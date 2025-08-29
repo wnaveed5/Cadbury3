@@ -92,11 +92,13 @@
 
 /* Enhanced Section Swap Visual Feedback */
 .sortable-section[data-is-dragging="true"] {
-  opacity: 0.6 !important;
-  transform: scale(0.95) !important;
+  opacity: 0.8 !important;
+  transform: rotate(1deg) scale(1.02) !important;
   border: 2px solid #4f46e5 !important;
   background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(55, 48, 163, 0.1) 100%) !important;
-  box-shadow: 0 8px 32px rgba(79, 70, 229, 0.3) !important;
+  box-shadow: 0 12px 24px rgba(139, 92, 246, 0.3) !important;
+  backdrop-filter: blur(2px) !important;
+  z-index: 1000 !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
@@ -223,13 +225,13 @@
 .sortable-section[data-section="3"],
 .sortable-section[data-section="4"] {
   margin-right: 0 !important;
-  border: 2px solid #ddd !important; /* Ensure border is consistent */
+  border: none !important;
 }
 
 /* New wrapper classes for sections 3 and 4 */
 .section-3-wrapper,
 .section-4-wrapper {
-  border: 2px solid #ddd;
+  border: none;
   border-radius: 8px;
   background-color: transparent;
   position: relative;
@@ -503,6 +505,7 @@
   width: 100% !important;
   max-width: 100% !important;
   box-sizing: border-box !important;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 /* Make sure the DraggableGroupHandle container expands fully */
@@ -511,6 +514,34 @@
   width: 100% !important;
   max-width: 100% !important;
   box-sizing: border-box !important;
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Prevent jittering during drag */
+[data-is-dragging="true"] {
+  transition: none !important;
+  will-change: transform !important;
+  pointer-events: none !important;
+}
+
+/* More aggressive anti-jitter measures */
+.major-sections-container {
+  overflow: visible !important;
+  contain: layout !important;
+}
+
+/* Smooth section transitions with better performance */
+.section-container {
+  transform-origin: center !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+  transform: translateZ(0) !important;
+}
+
+/* Disable all transitions during active dragging */
+.main-content-area[data-dragging="true"] * {
+  transition: none !important;
+  animation: none !important;
 }
 
 /* ============================================================================
@@ -554,8 +585,6 @@
    ============================================================================ */
 
 .sortable-section.section-1-company-info {
-  background: rgba(59, 130, 246, 0.1) !important; /* Light blue background */
-  border: 3px solid #3b82f6 !important; /* Blue border */
   border-radius: 8px !important;
   padding: 0 !important;
   width: 100% !important;
@@ -593,8 +622,6 @@
    ============================================================================ */
 
 .sortable-section.section-2-purchase-order {
-  background: rgba(16, 185, 129, 0.1) !important; /* Light green background */
-  border: 3px solid #10b981 !important; /* Green border */
   border-radius: 8px !important;
   padding: 0 !important;
   width: 100% !important;
@@ -632,8 +659,6 @@
    ============================================================================ */
 
 .sortable-section.section-3 {
-  background: rgba(245, 158, 11, 0.1) !important; /* Light orange background */
-  border: 3px solid #f59e0b !important; /* Orange border */
   border-radius: 8px !important;
   padding: 0 !important;
   width: 100% !important;
@@ -671,8 +696,6 @@
    ============================================================================ */
 
 .sortable-section.section-4 {
-  background: rgba(239, 68, 68, 0.1) !important; /* Light red background */
-  border: 3px solid #ef4444 !important; /* Red border */
   border-radius: 8px !important;
   padding: 0 !important;
   width: 100% !important;
@@ -863,7 +886,7 @@
 .section-header {
   border-bottom: 1px solid #e5e7eb !important;
   margin-bottom: 15px !important;
-  padding-bottom: 10px !important;
+  padding: 15px 0 10px 0 !important;
   position: relative !important;
   overflow: visible !important;
   display: flex !important;
@@ -886,17 +909,21 @@
   top: 50% !important;
   transform: translateY(-50%) !important;
   font-size: 16px !important;
-  color: #8b5cf6 !important;
+  color: white !important;
   font-weight: bold !important;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
   transition: all 0.2s ease !important;
   cursor: grab !important;
   pointer-events: auto !important;
-  background-color: white !important;
+  background-color: transparent !important;
   padding: 6px 10px !important;
   border-radius: 6px !important;
-  border: 2px solid #8b5cf6 !important;
-  box-shadow: 0 2px 4px rgba(139, 92, 246, 0.2) !important;
+  border: none !important;
+  box-shadow: none !important;
+  /* Override conflicting styles from AvailableFields.css */
+  /* Ensure visibility */
+  min-width: 20px !important;
+  text-align: center !important;
 }
 
 /* Section 5 shipping column drag indicators - white only */
@@ -912,10 +939,10 @@
 
 .section-header .drag-indicator:hover {
   color: white !important;
-  transform: translateY(-50%) scale(1.05) !important;
-  background-color: #8b5cf6 !important;
-  border-color: #7c3aed !important;
-  box-shadow: 0 4px 8px rgba(139, 92, 246, 0.3) !important;
+  transform: scale(1.05) !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 /* Section 5 shipping column drag indicators hover - simple */
@@ -1010,13 +1037,7 @@
   cursor: grabbing !important;
 }
 
-.sortable-section[data-is-dragging="true"] {
-  transform: rotate(1deg) scale(1.02) !important;
-  box-shadow: 0 12px 24px rgba(139, 92, 246, 0.3) !important;
-  z-index: 1000 !important;
-  background: rgba(255, 255, 255, 0.98) !important;
-  backdrop-filter: blur(2px) !important;
-}
+/* This rule is now merged with the earlier one at line 94 to avoid conflicts */
 
 .sortable-section[data-is-over="true"] {
   box-shadow: inset 0 0 0 2px rgba(139, 92, 246, 0.4) !important;
@@ -1024,49 +1045,18 @@
   transform: scale(1.01) !important;
 }
 
-/* Green highlighting when palette fields are dragged over sections */
+/* Palette over state for sections */
 .sortable-section[data-palette-over="true"],
 .section-1-company-info[data-palette-over="true"],
 .section-2-purchase-order[data-palette-over="true"],
 .section-3[data-palette-over="true"],
 .section-4[data-palette-over="true"] {
-  border: 3px solid #10b981 !important;
-  background: rgba(16, 185, 129, 0.15) !important;
   transform: scale(1.02) !important;
-  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3) !important;
   transition: all 0.2s ease-in-out !important;
   z-index: 100 !important;
 }
 
-/* Enhanced green highlighting with animation */
-.sortable-section[data-palette-over="true"]::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, 
-    rgba(16, 185, 129, 0.1) 0%, 
-    rgba(16, 185, 129, 0.2) 50%, 
-    rgba(16, 185, 129, 0.1) 100%);
-  border-radius: inherit;
-  animation: greenPulse 2s ease-in-out infinite;
-  pointer-events: none;
-  z-index: -1;
-}
 
-/* Green pulse animation */
-@keyframes greenPulse {
-  0%, 100% {
-    opacity: 0.3;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.6;
-    transform: scale(1.02);
-  }
-}
 
 /* Drop indicator styles */
 .drop-indicator {
@@ -1097,35 +1087,12 @@
 .section-3.palette-over,
 .section-4.palette-over,
 .section-5.palette-over {
-  border: 3px solid #10b981 !important;
-  background: rgba(16, 185, 129, 0.15) !important;
   transform: scale(1.02) !important;
-  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3) !important;
   transition: all 0.2s ease-in-out !important;
   position: relative;
 }
 
-/* Enhanced green highlighting with animation for palette over */
-.section-1-company-info.palette-over::before,
-.section-2-purchase-order.palette-over::before,
-.section-3.palette-over::before,
-.section-4.palette-over::before,
-.section-5.palette-over::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, 
-    rgba(16, 185, 129, 0.1) 0%, 
-    rgba(16, 185, 129, 0.2) 50%, 
-    rgba(16, 185, 129, 0.1) 100%);
-  border-radius: inherit;
-  animation: greenPulse 2s ease-in-out infinite;
-  pointer-events: none;
-  z-index: -1;
-}
+
 
 @keyframes dropPulse {
   0%, 100% {
@@ -1273,9 +1240,11 @@
 }
 
 .sortable-column-header.dragging > th {
-  opacity: 0.95 !important;
-  transform: rotate(0.5deg) scale(1.03) !important;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3) !important;
+  opacity: 0.8;
+  transform: rotate(1deg);
+  z-index: 1000;
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+  background-color: rgba(59, 130, 246, 0.1);
 }
 
 /* ============================================================================
@@ -1363,8 +1332,8 @@
 }
 
 .totals-section .total-row.total-final {
-  border-color: #059669;
-  background: #f0fdf4;
+  border-color: #e5e7eb;
+  background: white;
 }
 
 .totals-section .total-row.total-final .field-label {
@@ -1374,9 +1343,9 @@
 }
 
 .totals-section .total-row.total-final .total-field {
-  background: #dcfce7;
-  border-color: #059669;
-  color: #065f46;
+  background: #f9fafb;
+  border-color: #e5e7eb;
+  color: #374151;
   font-weight: 700;
   font-size: 1.1em;
 }
@@ -1423,8 +1392,8 @@
 }
 
 .comments-section .comments-field-item.main-comment {
-  border-color: #3b82f6;
-  background: #f0f9ff;
+  border-color: #e5e7eb;
+  background: white;
 }
 
 .comments-section .comments-field-item .field-controls {
@@ -1491,8 +1460,10 @@
 }
 
 .contact-section .contact-field-item.main-contact {
-  border-color: #3b82f6;
-  background: #f0f9ff;
+  border-color: #e5e7eb;
+  background: white;
+  margin-bottom: 40px !important;
+  margin-top: 90px !important;
 }
 
 .contact-section .contact-field-item .field-controls {
@@ -1611,25 +1582,17 @@
   box-sizing: border-box !important;
 }
 
-/* DEBUGGING COLORS - Field Containers */
+/* Field Containers */
 .company-fields-container {
-  background: rgba(59, 130, 246, 0.05) !important; /* Very light blue */
-  border: 2px dashed #3b82f6 !important; /* Blue dashed border */
 }
 
 .po-fields-container {
-  background: rgba(16, 185, 129, 0.05) !important; /* Very light green */
-  border: 2px dashed #10b981 !important; /* Green dashed border */
 }
 
 .vendor-fields-container {
-  background: rgba(245, 158, 11, 0.05) !important; /* Very light orange */
-  border: 2px dashed #f59e0b !important; /* Orange dashed border */
 }
 
 .ship-to-fields-container {
-  background: rgba(239, 68, 68, 0.05) !important; /* Very light red */
-  border: 2px dashed #ef4444 !important; /* Red dashed border */
 }
 
 /* Field items */
@@ -1687,14 +1650,22 @@
    DRAG HANDLE STYLES - ALL SECTIONS
    ============================================================================ */
 
-/* Enhanced Uniform Drag Handle Styling */
-.drag-handle {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
-  border: 2px solid #4f46e5 !important;
+/* Enhanced Uniform Drag Handle Styling - MASTER OVERRIDE */
+.drag-handle,
+.field-controls .drag-handle,
+.vendor-field-controls .drag-handle,
+.ship-to-field-controls .drag-handle,
+.po-field-controls .drag-handle,
+.company-field-controls .drag-handle,
+.comments-field-controls .drag-handle,
+.totals-field-controls .drag-handle,
+div.drag-handle {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
   border-radius: 8px !important;
   padding: 6px 10px !important;
   cursor: grab !important;
-  color: #4f46e5 !important;
+  color: #000000 !important;
   font-weight: 700 !important;
   font-size: 14px !important;
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
@@ -1702,6 +1673,10 @@
   user-select: none !important;
   min-width: 32px !important;
   min-height: 28px !important;
+  max-width: 32px !important;
+  max-height: 28px !important;
+  width: 32px !important;
+  height: 28px !important;
   text-align: center !important;
   opacity: 1 !important;
   visibility: visible !important;
@@ -1709,20 +1684,62 @@
   align-items: center !important;
   justify-content: center !important;
   z-index: 15 !important;
-  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.15), 
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 
               0 1px 3px rgba(0, 0, 0, 0.1) !important;
   line-height: 1 !important;
   letter-spacing: 0.5px !important;
   position: relative !important;
+  margin: 0 !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
 }
 
-.drag-handle:hover {
-  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
-  border-color: #3730a3 !important;
-  color: white !important;
+/* Ensure :: text is perfectly centered in drag handles */
+.drag-handle,
+.field-controls .drag-handle,
+.vendor-field-controls .drag-handle,
+.ship-to-field-controls .drag-handle,
+.po-field-controls .drag-handle,
+.company-field-controls .drag-handle,
+.comments-field-controls .drag-handle,
+.totals-field-controls .drag-handle,
+div.drag-handle {
+  font-family: monospace !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+.drag-handle::after,
+.field-controls .drag-handle::after,
+.vendor-field-controls .drag-handle::after,
+.ship-to-field-controls .drag-handle::after,
+.po-field-controls .drag-handle::after,
+.company-field-controls .drag-handle::after,
+.comments-field-controls .drag-handle::after,
+.totals-field-controls .drag-handle::after,
+div.drag-handle::after {
+  content: "";
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.drag-handle:hover,
+.field-controls .drag-handle:hover,
+.vendor-field-controls .drag-handle:hover,
+.ship-to-field-controls .drag-handle:hover,
+.po-field-controls .drag-handle:hover,
+.company-field-controls .drag-handle:hover,
+.comments-field-controls .drag-handle:hover,
+.totals-field-controls .drag-handle:hover,
+div.drag-handle:hover {
+  background: #000000 !important;
+  border-color: #000000 !important;
+  color: #ffffff !important;
   cursor: grab !important;
   transform: translateY(-1px) scale(1.05) !important;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3), 
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 
               0 2px 6px rgba(0, 0, 0, 0.15) !important;
 }
 
@@ -1797,8 +1814,8 @@
 .add-field-section .add-field-btn,
 .vendor-shipping-columns .add-field-btn,
 .add-field-btn {
-  background: #10b981 !important;
-  border: none !important;
+  background: #000000 !important;
+  border: 2px solid white !important;
   font-size: 18px !important;
   font-weight: bold !important;
   color: white !important;
@@ -1816,7 +1833,7 @@
   position: static !important;
   margin: 0 auto !important;
   border-radius: 50% !important;
-  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25) !important;
   line-height: 1 !important;
   padding: 0 !important;
   text-align: center !important;
@@ -1838,9 +1855,9 @@
 .add-field-section .add-field-btn:hover,
 .vendor-shipping-columns .add-field-btn:hover,
 .add-field-btn:hover {
-  background: #059669 !important;
+  background: #333333 !important;
   transform: translateY(-1px) scale(1.1) !important;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
 }
 
 /* Unified active state for ALL add-field buttons */
@@ -2020,6 +2037,26 @@
 .swap-sections-btn:focus {
   outline: none !important;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.5) !important;
+}
+
+/* ============================================================================
+   SECTION TITLE COLOR PICKER STYLES
+   ============================================================================ */
+
+.section-title-color-picker {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.section-title-color-picker * {
+  border: none !important;
+  outline: none !important;
+}
+
+.section-title-color-picker > div {
+  border: none !important;
+  outline: none !important;
 }
 
 /* ============================================================================

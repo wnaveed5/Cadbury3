@@ -2,6 +2,17 @@
    PURCHASE ORDER FORM STYLES
    ============================================================================ */
 
+/* File Upload Button - Black Style */
+.file-upload-black-button .pdf-upload-button {
+  background-color: #000000 !important;
+  color: white !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+}
+
+.file-upload-black-button .pdf-upload-button:hover {
+  background-color: #333333 !important;
+}
+
 /* ============================================================================
    DRAG AND DROP VISUAL FEEDBACK STYLES
    ============================================================================ */
@@ -211,45 +222,60 @@
   }
 }
 
-/* Adjust main container to account for sidebar */
+/* Main container */
 .purchase-order-container {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
   background-color: #f5f5f5;
-  margin-left: 280px; /* Account for sidebar width */
-  transition: margin-left 0.3s ease;
 }
 
-/* When sidebar is hidden, adjust main container */
-.purchase-order-container.sidebar-hidden {
-  margin-left: 0;
+/* Main Content Area - Form and Sidebar combined */
+.main-content-area {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  min-height: calc(100vh - 200px);
+  max-width: 1600px;
+  margin: 0 auto;
+  justify-content: center;
+  align-items: flex-start;
 }
 
-/* ============================================================================
-   RESPONSIVE DESIGN
-   ============================================================================ */
-
-/* Medium screens */
-@media (max-width: 1200px) {
-  .purchase-order-container {
-    margin-left: 250px;
-  }
-  
-  .purchase-order-container.sidebar-hidden {
-    margin-left: 0;
-  }
+/* Field List Sidebar - Updated positioning */
+.field-list-sidebar {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  width: 280px !important;
+  height: auto !important;
+  background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%) !important;
+  border: 2px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1) !important;
+  overflow-y: visible !important;
+  z-index: 999 !important;
+  transition: none !important;
+  flex-shrink: 0;
 }
 
-/* Small screens */
-@media (max-width: 768px) {
-  .purchase-order-container {
-    margin-left: 0;
-  }
-  
-  .purchase-order-container.sidebar-hidden {
-    margin-left: 0;
-  }
+/* Container adjustments for new layout */
+.container {
+  max-width: 1200px;
+  flex: 1;
+  width: 100%;
+  margin: 0;
+  background: white;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  box-sizing: border-box;
+  flex: 1;
+}
+
+.form-content {
+  padding: 30px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* ============================================================================
@@ -262,6 +288,8 @@
   text-align: center;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   margin-bottom: 30px;
+  position: relative;
+  width: 100%;
 }
 
 .page-header h1 {
@@ -279,26 +307,37 @@
 }
 
 /* ============================================================================
-   CONTAINER STYLES
+   RESPONSIVE DESIGN
    ============================================================================ */
 
-.container {
-  max-width: 1200px;
-  width: 90%;
-  margin: 20px auto;
-  background: white;
-  box-shadow: 0 0 20px rgba(0,0,0,0.1);
-  border-radius: 8px;
-  box-sizing: border-box;
+/* Medium screens */
+@media (max-width: 1200px) {
+  .main-content-area {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .field-list-sidebar {
+    width: 100% !important;
+    height: auto !important;
+  }
 }
 
-.form-content {
-  padding: 30px;
-  width: 100%;
-  box-sizing: border-box;
+/* Small screens */
+@media (max-width: 768px) {
+  .main-content-area {
+    padding: 15px;
+    gap: 10px;
+  }
+  
+  .field-list-sidebar {
+    width: 100% !important;
+  }
+  
+  .container {
+    margin: 0;
+  }
 }
-
-
 
         /* Add smooth transition for when dragging ends */
         .sortable-column-header > th {

@@ -67,16 +67,16 @@ function Section1CompanyInfo({
       data-palette-over={isPaletteOver}
     >
       {/* Section Header */}
-      <div className="section-header">
-        COMPANY INFO
-        <span 
-          className="drag-indicator"
-          {...dragAttributes}
-          {...dragListeners}
-          style={{ cursor: 'grab' }}
-        >
+      <div 
+        className="section-header"
+        {...dragAttributes}
+        {...dragListeners}
+        style={{ cursor: 'grab' }}
+      >
+        <span className="drag-indicator">
           ::
         </span>
+        COMPANY INFO
       </div>
       
       {/* Company Fields with Drag and Drop */}

@@ -79,16 +79,16 @@ function Section4ShipTo({
       data-palette-over={isPaletteOver}
     >
       {/* Section Header */}
-      <div className="section-header">
-        SHIP TO
-        <span 
-          className="drag-indicator"
-          {...dragAttributes}
-          {...dragListeners}
-          style={{ cursor: 'grab' }}
-        >
+      <div 
+        className="section-header"
+        {...dragAttributes}
+        {...dragListeners}
+        style={{ cursor: 'grab' }}
+      >
+        <span className="drag-indicator">
           ::
         </span>
+        SHIP TO
       </div>
       
       {/* Ship To Fields with Drag and Drop */}

@@ -29,20 +29,7 @@
   box-sizing: border-box !important;
 }
 
-/* Section header drag indicator */
-.section-header .drag-indicator {
-  opacity: 1 !important;
-  visibility: visible !important;
-  display: inline-block !important;
-  color: var(--header-text) !important;
-  z-index: 2 !important;
-  float: right !important;
-  font-size: 12px !important;
-  margin-right: 8px !important;
-  background-color: transparent !important;
-  padding: 2px 4px !important;
-  border-radius: 3px !important;
-}
+/* Section header drag indicator - styles moved to section-styles.css */
 
 /* ============================================================================
    FIELD LIST SIDEBAR HEADERS (ONLY HEADERS, NOT FIELD ITEMS)

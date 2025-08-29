@@ -67,16 +67,16 @@ function Section2PurchaseOrder({
       data-palette-over={isPaletteOver}
     >
       {/* Section Header */}
-      <div className="section-header">
-        PURCHASE ORDER
-        <span 
-          className="drag-indicator"
-          {...dragAttributes}
-          {...dragListeners}
-          style={{ cursor: 'grab' }}
-        >
+      <div 
+        className="section-header"
+        {...dragAttributes}
+        {...dragListeners}
+        style={{ cursor: 'grab' }}
+      >
+        <span className="drag-indicator">
           ::
         </span>
+        PURCHASE ORDER
       </div>
       
       {/* Purchase Order Fields with Drag and Drop */}
