@@ -40,7 +40,7 @@ import { arrayMove } from '@dnd-kit/sortable';
 function DragPreview({ activeDragItem }) {
   if (!activeDragItem) return null;
 
-  const { data, type } = activeDragItem;
+  const { data, type, id } = activeDragItem;
 
   // Preview for palette fields being dragged
   if (type === 'palette-field') {
@@ -55,13 +55,18 @@ function DragPreview({ activeDragItem }) {
     );
   }
 
-  // Preview for section dragging
-  if (type === 'section') {
+  // Preview for section dragging - simple text preview
+  if (type === 'section' || id === 'section1' || id === 'section2') {
+    const sectionNumber = data?.sectionNumber || (id === 'section1' ? 1 : id === 'section2' ? 2 : '?');
+    const sectionTitle = sectionNumber === 1 ? 'COMPANY INFO' : 
+                        sectionNumber === 2 ? 'PURCHASE ORDER' : 
+                        `Section ${sectionNumber}`;
+    
     return (
-      <div className="drag-preview section-preview">
+      <div className="drag-preview section-swap-preview">
         <div className="drag-preview-content">
           <span className="drag-preview-icon">📋</span>
-          <span className="drag-preview-label">Section {data?.sectionNumber || '?'}</span>
+          <span className="drag-preview-label">{sectionTitle}</span>
         </div>
         <div className="drag-preview-shadow"></div>
       </div>
@@ -3556,7 +3561,7 @@ function PurchaseOrderForm() {
         </div>
       </div>
 
-        {/* DragOverlay showing actual field being dragged */}
+        {/* DragOverlay only for palette fields */}
         <DragOverlay>
           {activeDragItem && activeDragItem.type === 'palette-field' ? (
             // Show the actual field item when dragging from palette
@@ -3564,9 +3569,6 @@ function PurchaseOrderForm() {
               <span className="field-name">{activeDragItem.data?.label || 'Field'}</span>
               <button className="add-field-btn">+</button>
             </div>
-          ) : activeDragItem ? (
-            // Use custom preview for other drag types
-            <DragPreview activeDragItem={activeDragItem} />
           ) : null}
         </DragOverlay>
       </DndContext>
