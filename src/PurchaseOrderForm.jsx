@@ -30,11 +30,55 @@ import {
   useShipToFieldsDragEnd
 } from './hooks/useDragAndDrop';
 
-import { DndContext, closestCenter, useDraggable, rectIntersection } from '@dnd-kit/core';
+import { DndContext, closestCenter, useDraggable, rectIntersection, DragOverlay } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { arrayMove } from '@dnd-kit/sortable';
 
+
+// Drag Preview Component for DragOverlay
+function DragPreview({ activeDragItem }) {
+  if (!activeDragItem) return null;
+
+  const { data, type } = activeDragItem;
+
+  // Preview for palette fields being dragged
+  if (type === 'palette-field') {
+    return (
+      <div className="drag-preview palette-field-preview">
+        <div className="drag-preview-content">
+          <span className="drag-preview-icon">📄</span>
+          <span className="drag-preview-label">{data?.label || 'Field'}</span>
+        </div>
+        <div className="drag-preview-shadow"></div>
+      </div>
+    );
+  }
+
+  // Preview for section dragging
+  if (type === 'section') {
+    return (
+      <div className="drag-preview section-preview">
+        <div className="drag-preview-content">
+          <span className="drag-preview-icon">📋</span>
+          <span className="drag-preview-label">Section {data?.sectionNumber || '?'}</span>
+        </div>
+        <div className="drag-preview-shadow"></div>
+      </div>
+    );
+  }
+
+  // Default preview
+  return (
+    <div className="drag-preview default-preview">
+      <div className="drag-preview-content">
+        <span className="drag-preview-icon">🎯</span>
+        <span className="drag-preview-label">Dragging...</span>
+      </div>
+      <div className="drag-preview-shadow"></div>
+    </div>
+  );
+}
 
 // Draggable Section Wrapper Component for Sections
 function DraggableSectionWrapper({ children, id, sectionNumber, isSectionHandleDragging = false, showDragHandle = true }) {
@@ -285,6 +329,9 @@ function PurchaseOrderForm() {
 
   // State for showing dummy data vs field pills
   const [showDummyData, setShowDummyData] = useState(true);
+
+  // Active drag item state for DragOverlay
+  const [activeDragItem, setActiveDragItem] = useState(null);
 
   // Toggle between dummy data and field pills
   const toggleDataMode = () => {
@@ -2228,6 +2275,13 @@ function PurchaseOrderForm() {
       source: active?.data?.current?.source
     });
 
+    // Set active drag item for DragOverlay
+    setActiveDragItem({
+      id: active.id,
+      data: active.data?.current,
+      type: active.data?.current?.type || 'unknown'
+    });
+
     // Add dragging state to the dragged element
     if (active.id === 'section1' || active.id === 'section2') {
       const element = document.getElementById(active.id);
@@ -2689,6 +2743,9 @@ function PurchaseOrderForm() {
     const { active, over } = event;
     const activeId = active?.id || '';
     const source = active?.data?.current?.source;
+
+    // Clear active drag item
+    setActiveDragItem(null);
 
     console.log('🔍 ROOT DRAG END:', {
       activeId,
@@ -3498,6 +3555,20 @@ function PurchaseOrderForm() {
 
         </div>
       </div>
+
+        {/* DragOverlay showing actual field being dragged */}
+        <DragOverlay>
+          {activeDragItem && activeDragItem.type === 'palette-field' ? (
+            // Show the actual field item when dragging from palette
+            <div className="field-item dragging-overlay">
+              <span className="field-name">{activeDragItem.data?.label || 'Field'}</span>
+              <button className="add-field-btn">+</button>
+            </div>
+          ) : activeDragItem ? (
+            // Use custom preview for other drag types
+            <DragPreview activeDragItem={activeDragItem} />
+          ) : null}
+        </DragOverlay>
       </DndContext>
       
       {/* Notification Container */}
