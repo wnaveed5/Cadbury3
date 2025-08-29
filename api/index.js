@@ -408,8 +408,15 @@ app.get('/api/health', (req, res) => {
 // Serve static files from React build (works for both local and Vercel)
 const buildPath = path.join(__dirname, '../build');
 
-if (fs.existsSync(buildPath)) {
-  // Serve static files from React build
+// Check if we're in development mode
+const isDevelopment = process.env.NODE_ENV !== 'production';
+
+if (isDevelopment) {
+  // In development, proxy React dev server requests
+  console.log('🔧 Development mode: React dev server will handle frontend');
+  console.log('📡 API endpoints available at /api/*');
+} else if (fs.existsSync(buildPath)) {
+  // In production, serve static files from React build
   app.use(express.static(buildPath));
   
   // Catch-all handler for React routing - must be last
@@ -427,7 +434,7 @@ module.exports = app;
 
 // Start server if running locally
 if (require.main === module) {
-  const PORT = process.env.PORT || 3000;
+  const PORT = process.env.PORT || 3001;
   app.listen(PORT, () => {
     console.log(`🚀 Single server running on port ${PORT}`);
     console.log(`📡 AI fill endpoint: http://localhost:${PORT}/api/ai/fill`);

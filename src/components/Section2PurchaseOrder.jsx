@@ -89,7 +89,7 @@ function Section2PurchaseOrder({
           items={purchaseOrderFields.map(field => field.id)}
           strategy={verticalListSortingStrategy}
         >
-          <div className="purchase-order-fields-container">
+          <div className="po-fields-container">
             {purchaseOrderFields.map(field => (
               <SortablePurchaseOrderField 
                 key={field.id} 
@@ -118,14 +118,6 @@ function Section2PurchaseOrder({
         </button>
       </div>
       
-      {/* Drop indicator when palette field is over */}
-      {isPaletteOver && (
-        <div className="drop-indicator">
-          <div className="drop-message">
-            Drop field here
-          </div>
-        </div>
-      )}
     </div>
   );
 }

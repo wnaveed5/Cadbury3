@@ -9,6 +9,37 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Empty drop zone indicators */
+.company-fields-container:empty::after,
+.po-fields-container:empty::after,
+.vendor-fields-container:empty::after,
+.ship-to-fields-container:empty::after {
+  content: 'Drag fields here to add them to this section';
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60px;
+  color: #9ca3af;
+  font-size: 14px;
+  font-style: italic;
+  border: 2px dashed #e5e7eb;
+  border-radius: 6px;
+  background: #f9fafb;
+  transition: all 0.3s ease;
+}
+
+/* Enhanced empty state when dragging over */
+.palette-over .company-fields-container:empty::after,
+.palette-over .po-fields-container:empty::after,
+.palette-over .vendor-fields-container:empty::after,
+.palette-over .ship-to-fields-container:empty::after {
+  content: 'Drop field here';
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+  font-weight: 600;
+}
+
 .section-1-company-info.palette-over .section-header {
   background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
   color: white !important;
@@ -22,7 +53,7 @@
 }
 
 [data-palette-over="true"]::after {
-  content: '✨ Drop field here';
+  content: 'Drop field here';
   position: absolute;
   top: -30px;
   left: 50%;
@@ -84,7 +115,7 @@
 }
 
 .sortable-section[data-is-over="true"]::after {
-  content: '🔄 Drop to swap sections';
+  content: 'Drop to swap sections';
   position: absolute;
   top: -35px;
   left: 50%;
@@ -516,36 +547,181 @@
   position: relative !important;
 }
 
-/* Section 1: Company Info */
-.section-1-company-info {
-  flex: 1 1 100% !important; /* Take full width of droppable zone */
-  width: 100% !important;
-  min-width: 0 !important;
-  margin: 0 !important;
-  padding: 15px !important; /* Equal padding on all sides */
-  box-sizing: border-box !important;
-  border: 1px solid #e5e7eb !important;
-  background: transparent !important; /* No background */
+/* All sections now have specific styling - no generic styling needed */
+
+/* ============================================================================
+   SECTION 1 - COMPANY INFO SPECIFIC STYLING
+   ============================================================================ */
+
+.sortable-section.section-1-company-info {
+  background: rgba(59, 130, 246, 0.1) !important; /* Light blue background */
+  border: 3px solid #3b82f6 !important; /* Blue border */
   border-radius: 8px !important;
+  padding: 0 !important;
+  width: 100% !important;
   height: 100% !important;
+  min-height: 200px !important;
   display: flex !important;
   flex-direction: column !important;
+  box-sizing: border-box !important;
+  position: relative !important;
 }
+
+.sortable-section.section-1-company-info .section-content {
+  width: 100% !important;
+  height: 100% !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.sortable-section.section-1-company-info .section-1-company-info {
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 15px !important;
+  margin: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-sizing: border-box !important;
+}
+
+/* ============================================================================
+   SECTION 2 - PURCHASE ORDER SPECIFIC STYLING
+   ============================================================================ */
+
+.sortable-section.section-2-purchase-order {
+  background: rgba(16, 185, 129, 0.1) !important; /* Light green background */
+  border: 3px solid #10b981 !important; /* Green border */
+  border-radius: 8px !important;
+  padding: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 200px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+}
+
+.sortable-section.section-2-purchase-order .section-content {
+  width: 100% !important;
+  height: 100% !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.sortable-section.section-2-purchase-order .section-2-purchase-order {
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 15px !important;
+  margin: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-sizing: border-box !important;
+}
+
+/* ============================================================================
+   SECTION 3 - VENDOR SPECIFIC STYLING
+   ============================================================================ */
+
+.sortable-section.section-3 {
+  background: rgba(245, 158, 11, 0.1) !important; /* Light orange background */
+  border: 3px solid #f59e0b !important; /* Orange border */
+  border-radius: 8px !important;
+  padding: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 200px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+}
+
+.sortable-section.section-3 .section-content {
+  width: 100% !important;
+  height: 100% !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.sortable-section.section-3 .section-3 {
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 15px !important;
+  margin: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-sizing: border-box !important;
+}
+
+/* ============================================================================
+   SECTION 4 - SHIP TO SPECIFIC STYLING
+   ============================================================================ */
+
+.sortable-section.section-4 {
+  background: rgba(239, 68, 68, 0.1) !important; /* Light red background */
+  border: 3px solid #ef4444 !important; /* Red border */
+  border-radius: 8px !important;
+  padding: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 200px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+}
+
+.sortable-section.section-4 .section-content {
+  width: 100% !important;
+  height: 100% !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.sortable-section.section-4 .section-4 {
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 15px !important;
+  margin: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-sizing: border-box !important;
+}
+
+
 
 /* Section 2: Purchase Order */
 .section-2-purchase-order {
   flex: 1 1 100% !important; /* Take full width of droppable zone */
   width: 100% !important;
   min-width: 0 !important;
-  text-align: center;
   margin: 0 !important;
   padding: 15px !important; /* Equal padding on all sides */
   box-sizing: border-box !important;
   border: 1px solid #e5e7eb !important;
-  overflow: hidden !important;
   background: transparent !important; /* No background */
   border-radius: 8px !important;
   height: 100% !important;
+  min-height: 200px !important; /* Ensure minimum droppable area */
+  position: relative !important; /* For proper drop zone positioning */
+  z-index: 1 !important; /* Ensure it's above other elements */
   display: flex !important;
   flex-direction: column !important;
 }
@@ -843,6 +1019,27 @@
   position: relative !important;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease !important;
   cursor: grab !important;
+}
+
+/* DEBUGGING COLORS - Sortable Section Wrappers */
+.sortable-section.section-1-company-info {
+  background: rgba(59, 130, 246, 0.15) !important; /* Medium blue */
+  border: 4px solid #1d4ed8 !important; /* Darker blue */
+}
+
+.sortable-section.section-2-purchase-order {
+  background: rgba(16, 185, 129, 0.15) !important; /* Medium green */
+  border: 4px solid #047857 !important; /* Darker green */
+}
+
+.sortable-section.section-3 {
+  background: rgba(245, 158, 11, 0.15) !important; /* Medium orange */
+  border: 4px solid #d97706 !important; /* Darker orange */
+}
+
+.sortable-section.section-4 {
+  background: rgba(239, 68, 68, 0.15) !important; /* Medium red */
+  border: 4px solid #dc2626 !important; /* Darker red */
 }
 
 .sortable-section:active {
@@ -1381,6 +1578,11 @@
 
 .section-content {
   padding: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-sizing: border-box !important;
 }
 
 /* ============================================================================
@@ -1438,8 +1640,32 @@
   border: none !important;
   padding: 10px !important;
   border-radius: 4px !important;
+  flex: 1 !important; /* Allow container to grow and be droppable */
+  min-height: 100px !important; /* Ensure droppable area even when empty */
+  position: relative !important;
   width: 100% !important;
   box-sizing: border-box !important;
+}
+
+/* DEBUGGING COLORS - Field Containers */
+.company-fields-container {
+  background: rgba(59, 130, 246, 0.05) !important; /* Very light blue */
+  border: 2px dashed #3b82f6 !important; /* Blue dashed border */
+}
+
+.po-fields-container {
+  background: rgba(16, 185, 129, 0.05) !important; /* Very light green */
+  border: 2px dashed #10b981 !important; /* Green dashed border */
+}
+
+.vendor-fields-container {
+  background: rgba(245, 158, 11, 0.05) !important; /* Very light orange */
+  border: 2px dashed #f59e0b !important; /* Orange dashed border */
+}
+
+.ship-to-fields-container {
+  background: rgba(239, 68, 68, 0.05) !important; /* Very light red */
+  border: 2px dashed #ef4444 !important; /* Red dashed border */
 }
 
 /* Field items */

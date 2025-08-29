@@ -47,7 +47,7 @@ function DragPreview({ activeDragItem }) {
     return (
       <div className="drag-preview palette-field-preview">
         <div className="drag-preview-content">
-          <span className="drag-preview-icon">📄</span>
+          <span className="drag-preview-icon">●</span>
           <span className="drag-preview-label">{data?.label || 'Field'}</span>
         </div>
         <div className="drag-preview-shadow"></div>
@@ -65,7 +65,7 @@ function DragPreview({ activeDragItem }) {
     return (
       <div className="drag-preview section-swap-preview">
         <div className="drag-preview-content">
-          <span className="drag-preview-icon">📋</span>
+          <span className="drag-preview-icon">■</span>
           <span className="drag-preview-label">{sectionTitle}</span>
         </div>
         <div className="drag-preview-shadow"></div>
@@ -77,7 +77,7 @@ function DragPreview({ activeDragItem }) {
   return (
     <div className="drag-preview default-preview">
       <div className="drag-preview-content">
-        <span className="drag-preview-icon">🎯</span>
+        <span className="drag-preview-icon">●</span>
         <span className="drag-preview-label">Dragging...</span>
       </div>
       <div className="drag-preview-shadow"></div>
@@ -106,12 +106,16 @@ function DraggableSectionWrapper({ children, id, sectionNumber, isSectionHandleD
   // Map section numbers to proper CSS classes
   const getSectionClass = (sectionNum) => {
     switch(sectionNum) {
+      case '1':
       case 1:
         return 'section-1-company-info';
+      case '2':
       case 2:
         return 'section-2-purchase-order';
+      case '3':
       case 3:
         return 'section-3';
+      case '4':
       case 4:
         return 'section-4';
       default:
@@ -124,13 +128,7 @@ function DraggableSectionWrapper({ children, id, sectionNumber, isSectionHandleD
     transition,
     opacity: isDragging ? 0.6 : 1,
     zIndex: isDragging ? 1000 : 1,
-    cursor: isDragging ? 'grabbing' : 'grab',
-    position: 'relative',
-    width: '100%',
-    height: '100%',
-    border: isDragging ? '3px solid #ff6b6b' : '2px solid #ddd',
-    borderRadius: '8px',
-    backgroundColor: isDragging ? 'rgba(255, 107, 107, 0.1)' : 'transparent'
+    cursor: isDragging ? 'grabbing' : 'grab'
   };
 
   return (
@@ -143,10 +141,7 @@ function DraggableSectionWrapper({ children, id, sectionNumber, isSectionHandleD
       data-dragging={isDragging}
       {...attributes}
     >
-      <div 
-        className="section-content"
-        style={{ position: 'relative', width: '100%', height: '100%' }}
-      >
+      <div className="section-content">
         {React.cloneElement(children, { dragListeners: listeners, dragAttributes: attributes })}
       </div>
     </div>
