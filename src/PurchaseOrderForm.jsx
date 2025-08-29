@@ -319,13 +319,7 @@ function PurchaseOrderForm() {
   // SIDEBAR MANAGEMENT
   // ============================================================================
   
-  // State for sidebar visibility on mobile
-  const [sidebarVisible, setSidebarVisible] = useState(true);
 
-  // Toggle sidebar visibility
-  const toggleSidebar = () => {
-    setSidebarVisible(!sidebarVisible);
-  };
 
   // State for showing dummy data vs field pills
   const [showDummyData, setShowDummyData] = useState(true);
@@ -2961,13 +2955,6 @@ function PurchaseOrderForm() {
         }}
       >
 
-      {/* Available Fields Sidebar Component */}
-      <AvailableFields 
-        isVisible={sidebarVisible}
-        onToggleVisibility={toggleSidebar}
-        showNotification={showNotification}
-      />
-
       {/* Page Header */}
       <header className="page-header">
         <div style={{ 
@@ -3046,6 +3033,11 @@ function PurchaseOrderForm() {
         </div>
         {/* Sidebar toggle is now handled by AvailableFields component */}
       </header>
+
+      {/* Available Fields Sidebar Component */}
+      <AvailableFields 
+        showNotification={showNotification}
+      />
 
       
 

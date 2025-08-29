@@ -67,68 +67,50 @@ const PaletteDraggable = ({ label, category, onAddField, showNotification }) => 
 
 // Main AvailableFields component
 const AvailableFields = ({ 
-  isVisible = true, 
-  onToggleVisibility, 
   onAddField, 
   showNotification 
 }) => {
   return (
-    <>
-      {/* Sidebar Toggle Button */}
-      <div className="sidebar-toggle-container">
-        <button 
-          className="sidebar-toggle-btn"
-          onClick={onToggleVisibility}
-          title={isVisible ? "Hide Field List" : "Show Field List"}
-        >
-          {isVisible ? "Hide Fields" : "Show Fields"}
-        </button>
+    <div className="field-list-sidebar">
+      <div className="field-list-header">
+        <h3>Available Fields</h3>
+        <p>Drag fields to sections or click + to add</p>
       </div>
-
-      {/* Field List Sidebar */}
-      {isVisible && (
-        <div className="field-list-sidebar">
-          <div className="field-list-header">
-            <h3>Available Fields</h3>
-            <p>Drag fields to sections or click + to add</p>
+      <div className="field-list-content">
+        {availableFieldsData.map((category, categoryIndex) => (
+          <div key={categoryIndex} className="field-category">
+            <h4 className="category-title">{category.category}</h4>
+            <ul className="field-list">
+              {category.fields.map((field, fieldIndex) => (
+                <PaletteDraggable 
+                  key={`${categoryIndex}-${fieldIndex}`} 
+                  label={field} 
+                  category={category.category}
+                  onAddField={onAddField}
+                  showNotification={showNotification}
+                />
+              ))}
+            </ul>
           </div>
-          <div className="field-list-content">
-            {availableFieldsData.map((category, categoryIndex) => (
-              <div key={categoryIndex} className="field-category">
-                <h4 className="category-title">{category.category}</h4>
-                <ul className="field-list">
-                  {category.fields.map((field, fieldIndex) => (
-                    <PaletteDraggable 
-                      key={`${categoryIndex}-${fieldIndex}`} 
-                      label={field} 
-                      category={category.category}
-                      onAddField={onAddField}
-                      showNotification={showNotification}
-                    />
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-          
-          {/* Drag Instructions */}
-          <div className="drag-instructions">
-            <div className="instruction-item">
-              <span className="instruction-icon">Target</span>
-              <span>Drag fields to any section</span>
-            </div>
-            <div className="instruction-item">
-              <span className="instruction-icon">Visual</span>
-              <span>Visual feedback shows drop zones</span>
-            </div>
-            <div className="instruction-item">
-              <span className="instruction-icon">Reorder</span>
-              <span>Fields can be reordered within sections</span>
-            </div>
-          </div>
+        ))}
+      </div>
+      
+      {/* Drag Instructions */}
+      <div className="drag-instructions">
+        <div className="instruction-item">
+          <span className="instruction-icon">Target</span>
+          <span>Drag fields to any section</span>
         </div>
-      )}
-    </>
+        <div className="instruction-item">
+          <span className="instruction-icon">Visual</span>
+          <span>Visual feedback shows drop zones</span>
+        </div>
+        <div className="instruction-item">
+          <span className="instruction-icon">Reorder</span>
+          <span>Fields can be reordered within sections</span>
+        </div>
+      </div>
+    </div>
   );
 };
 

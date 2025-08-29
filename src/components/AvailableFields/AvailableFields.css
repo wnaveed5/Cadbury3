@@ -2,53 +2,19 @@
    AVAILABLE FIELDS COMPONENT STYLES
    ============================================================================ */
 
-/* Sidebar Toggle Container */
-.sidebar-toggle-container {
-  position: fixed;
-  top: 20px;
-  left: 300px;
-  z-index: 1000;
-}
-
-.sidebar-toggle-btn {
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.sidebar-toggle-btn:hover {
-  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
-}
-
-.sidebar-toggle-btn:active {
-  transform: translateY(0);
-}
-
 /* Field List Sidebar */
 .field-list-sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 280px;
-  height: 100vh;
-  background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
-  border-right: 2px solid #e2e8f0;
-  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
-  overflow-y: auto;
-  z-index: 999;
-  transition: transform 0.3s ease;
+  position: fixed !important;
+  top: 230px !important;
+  left: 0 !important;
+  width: 280px !important;
+  height: calc(100vh - 250px) !important;
+  background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%) !important;
+  border-right: 2px solid #e2e8f0 !important;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1) !important;
+  overflow-y: visible !important;
+  z-index: 999 !important;
+  transition: none !important;
 }
 
 .field-list-sidebar::-webkit-scrollbar {
@@ -269,13 +235,6 @@
   
   .field-list-sidebar.sidebar-visible {
     transform: translateX(0);
-  }
-  
-  .sidebar-toggle-container {
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    z-index: 1001;
   }
 }
 
